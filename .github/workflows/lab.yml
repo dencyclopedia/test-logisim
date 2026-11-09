@@ -61,20 +61,23 @@ jobs:
           Get-ChildItem "$env:ProgramData\Microsoft\Windows\Start Menu\Programs" -Recurse -Filter '*ogisim*' | Select-Object FullName | ConvertTo-Json | Set-Content "$o/start-menu.json"
           Get-ChildItem 'HKLM:\SOFTWARE\Classes\.circ' -ErrorAction SilentlyContinue | Out-File "$o/circ-association.txt"
           cmd /c "assoc .circ" 2>&1 | Out-File -Append "$o/circ-association.txt"
-      - name: Run the bundled runtime headless (tty)
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '21' }
+      - name: CLI with Java 21 and the downloaded jar; launcher output
         continue-on-error: true
         run: |
-          $o = "out/${{ matrix.os }}"
+          $o = "out/${{ matrix.os }}"; $jar = "logisim-evolution-$env:VER-all.jar"
           $d = (Get-ChildItem 'C:\Program Files' -Directory | Where-Object Name -like '*ogisim*' | Select-Object -First 1).FullName
-          $java = Get-ChildItem $d -Recurse -Filter java.exe | Select-Object -First 1
-          $jar = Get-ChildItem $d -Recurse -Filter *.jar | Where-Object Name -like 'logisim*' | Select-Object -First 1
-          "java=$($java.FullName)`njar=$($jar.FullName)" | Out-File "$o/bundled.txt"
-          & $java.FullName -version 2>&1 | Out-File -Append "$o/bundled.txt"
-          & $java.FullName -jar $jar.FullName --version 2>&1 | Out-File "$o/version.txt"
-          & $java.FullName -jar $jar.FullName --tty table lab/circuits/full-adder-v5.circ 2>&1 | Out-File "$o/tty-full-adder.txt"
-          $t = Measure-Command { & $java.FullName -jar $jar.FullName --tty table lab/circuits/rom-seq.circ --load lab/circuits/rom-raw.txt 2>&1 | Out-File "$o/tty-rom-load.txt" }
-          & $java.FullName -jar $jar.FullName --no-splash -w main lab/circuits/full-adder-pass.txt lab/circuits/full-adder-v5.circ 2>&1 | Out-File "$o/test-vector-pass.txt"; "exit=$LASTEXITCODE" | Out-File -Append "$o/test-vector-pass.txt"
-          & $java.FullName -jar $jar.FullName --no-splash -w main lab/circuits/full-adder-fail.txt lab/circuits/full-adder-v5.circ 2>&1 | Out-File "$o/test-vector-fail.txt"; "exit=$LASTEXITCODE" | Out-File -Append "$o/test-vector-fail.txt"
+          Get-Content "$d\app\logisim-evolution.cfg" | Out-File "$o/launcher-cfg.txt"
+          Get-ChildItem "$d\runtime\bin" -Filter *.exe | Select-Object Name | Out-File "$o/runtime-bin-exes.txt"
+          & "$d\logisim-evolution.exe" --version 2>&1 | Out-File "$o/launcher-version.txt"; "exit=$LASTEXITCODE" | Out-File -Append "$o/launcher-version.txt"
+          java -version 2>&1 | Out-File "$o/java21.txt"
+          java -jar $jar --version 2>&1 | Out-File "$o/version.txt"
+          java -jar $jar --tty table lab/circuits/full-adder-v5.circ 2>&1 | Out-File "$o/tty-full-adder.txt"
+          java -jar $jar --tty table lab/circuits/rom-seq.circ --load lab/circuits/rom-raw.txt 2>&1 | Out-File "$o/tty-rom-load.txt"
+          java -jar $jar --no-splash -w main lab/circuits/full-adder-pass.txt lab/circuits/full-adder-v5.circ 2>&1 | Out-File "$o/test-vector-pass.txt"; "exit=$LASTEXITCODE" | Out-File -Append "$o/test-vector-pass.txt"
+          java -jar $jar --no-splash -w main lab/circuits/full-adder-fail.txt lab/circuits/full-adder-v5.circ 2>&1 | Out-File "$o/test-vector-fail.txt"; "exit=$LASTEXITCODE" | Out-File -Append "$o/test-vector-fail.txt"
+          $t = Measure-Command { java -jar $jar --tty speed lab/circuits/counter-halt-65535.circ 2>&1 | Out-File "$o/tty-speed.txt" }
       - name: Launch the GUI and take screenshots
         continue-on-error: true
         run: |
@@ -129,6 +132,7 @@ jobs:
         with: { name: 'win-${{ matrix.os }}', path: out }
 
   macos:
+    defaults: { run: { shell: 'bash {0}' } }
     strategy:
       fail-fast: false
       matrix:
@@ -171,22 +175,42 @@ jobs:
           spctl --assess --type execute -vv "$A" > $o/spctl-after-fix.txt 2>&1; echo "exit=$?" >> $o/spctl-after-fix.txt
           find "$A/Contents" -maxdepth 2 > $o/app-tree.txt
           plutil -p "$A/Contents/Info.plist" > $o/info-plist.txt 2>&1
-      - name: Bundled runtime headless (tty)
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '21' }
+      - name: What is inside the app, and the CLI via launcher and via Java 21
         continue-on-error: true
         run: |
           o=out/${{ matrix.os }}; A=$(cat $o/app-path.txt)
-          J=$(find "$A/Contents" -name java -type f -perm -u+x | head -1); JAR=$(find "$A/Contents" -name 'logisim*.jar' | head -1)
-          echo "java=$J jar=$JAR" > $o/bundled.txt; "$J" -version >> $o/bundled.txt 2>&1
-          "$J" -jar "$JAR" --version > $o/version.txt 2>&1
-          "$J" -Djava.awt.headless=true -jar "$JAR" --tty table lab/circuits/full-adder-v5.circ > $o/tty-full-adder.txt 2>&1
-          "$J" -jar "$JAR" --tty table lab/circuits/rom-seq.circ --load lab/circuits/rom-raw.txt > $o/tty-rom-load.txt 2>&1
-          "$J" -jar "$JAR" --no-splash -w main lab/circuits/full-adder-fail.txt lab/circuits/full-adder-v5.circ > $o/test-vector-fail.txt 2>&1; echo "exit=$?" >> $o/test-vector-fail.txt
-          java -version > $o/java-on-path.txt 2>&1 || true
+          ls -la "$A/Contents/app" > $o/app-dir.txt 2>&1
+          find "$A/Contents/runtime" -path '*bin*' > $o/runtime-bin.txt 2>&1
+          JAR=$(ls "$A"/Contents/app/*.jar | head -1); echo "jar=$JAR" > $o/jar-inside.txt
+          shasum -a 256 "$JAR" >> $o/jar-inside.txt
+          unzip -p "$JAR" META-INF/MANIFEST.MF >> $o/jar-inside.txt 2>&1
+          cat "$A"/Contents/app/*.cfg > $o/launcher-cfg.txt 2>&1
+          "$A/Contents/MacOS/Logisim-evolution" --version > $o/launcher-version.txt 2>&1; echo "exit=$?" >> $o/launcher-version.txt
+          "$A/Contents/MacOS/Logisim-evolution" --tty table lab/circuits/full-adder-v5.circ > $o/launcher-tty.txt 2>&1; echo "exit=$?" >> $o/launcher-tty.txt
+          java -version > $o/java21.txt 2>&1
+          java -jar "$JAR" --version > $o/jar-version.txt 2>&1
+          java -jar "$JAR" --tty table lab/circuits/full-adder-v5.circ > $o/tty-full-adder.txt 2>&1
+          java -jar "$JAR" --tty table lab/circuits/rom-seq.circ --load lab/circuits/rom-raw.txt > $o/tty-rom-load.txt 2>&1
+          java -jar "$JAR" --no-splash -w main lab/circuits/full-adder-fail.txt lab/circuits/full-adder-v5.circ > $o/test-vector-fail.txt 2>&1; echo "exit=$?" >> $o/test-vector-fail.txt
+          java -Djava.awt.headless=true -jar "$JAR" --no-splash -w main lab/circuits/full-adder-pass.txt lab/circuits/full-adder-v5.circ > $o/test-vector-pass-headless.txt 2>&1; echo "exit=$?" >> $o/test-vector-pass-headless.txt
+      - name: Gatekeeper with a quarantine flag (simulated browser download)
+        continue-on-error: true
+        run: |
+          o=out/${{ matrix.os }}; A=$(cat $o/app-path.txt)
+          xattr -w com.apple.quarantine "0083;$(printf %x $(date +%s));Safari;" "$A"; echo "xattr-exit=$?" > $o/xattr-quarantined.txt
+          xattr -l "$A" >> $o/xattr-quarantined.txt 2>&1
+          spctl --assess --type execute -vv "$A" > $o/spctl-quarantined.txt 2>&1; echo "exit=$?" >> $o/spctl-quarantined.txt
+          syspolicy_check distribution "$A" > $o/syspolicy-check.txt 2>&1; echo "exit=$?" >> $o/syspolicy-check.txt
+          xattr -dr com.apple.quarantine "$A"; xattr -l "$A" > $o/xattr-after-fix.txt 2>&1; echo "after-fix-exit=$?" >> $o/xattr-after-fix.txt
+          spctl --assess --type execute -vv "$A" > $o/spctl-after-fix.txt 2>&1; echo "exit=$?" >> $o/spctl-after-fix.txt
+          plutil -p "$A/Contents/Info.plist" > $o/info-plist.txt 2>&1
       - name: GUI launch and screenshot
         continue-on-error: true
         run: |
           o=out/${{ matrix.os }}; A=$(cat $o/app-path.txt)
-          open -a "$A" lab/circuits/wire-colours.circ; sleep 25
+          open -a "$A" lab/circuits/wire-colours.circ; sleep 45
           screencapture -x $o/gui-wire-colours.png || true
           osascript -e 'tell application "System Events" to keystroke return' || true; sleep 3
           screencapture -x $o/gui-after-enter.png || true
@@ -205,6 +229,7 @@ jobs:
 
   ubuntu:
     runs-on: ubuntu-24.04
+    defaults: { run: { shell: 'bash {0}' } }
     steps:
       - uses: actions/checkout@v4
       - name: Distro packages
@@ -226,7 +251,9 @@ jobs:
           dpkg -L logisim-evolution > $o/deb-files.txt 2>&1
           ls -la /usr/share/applications | grep -i logisim > $o/desktop-entry.txt 2>&1
           cat $(grep -il logisim /usr/share/applications/*.desktop /opt/*/lib/*.desktop 2>/dev/null | head -1) >> $o/desktop-entry.txt 2>&1
-          B=$(dpkg -L logisim-evolution | grep -E '/bin/[^/]+$' | head -1); echo "launcher=$B" > $o/bundled.txt
+          B=$(dpkg -L logisim-evolution | grep -E '/bin/[^/]+$' | grep -v runtime | head -1); echo "launcher=$B" > $o/bundled.txt
+          "$B" --version > $o/launcher-version.txt 2>&1; echo "exit=$?" >> $o/launcher-version.txt
+          "$B" --tty table lab/circuits/full-adder-v5.circ > $o/launcher-tty.txt 2>&1; echo "exit=$?" >> $o/launcher-tty.txt
           J=$(dpkg -L logisim-evolution | grep -E '/bin/java$' | head -1); JAR=$(dpkg -L logisim-evolution | grep -E 'logisim.*\.jar$' | head -1)
           echo "java=$J jar=$JAR" >> $o/bundled.txt; "$J" -version >> $o/bundled.txt 2>&1
           "$J" -jar "$JAR" --version > $o/version.txt 2>&1
