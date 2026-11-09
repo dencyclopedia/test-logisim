@@ -4,7 +4,7 @@
 name: lab-round3
 on:
   push:
-    paths: ['.github/workflows/lab3.yml']
+    paths: ['.github/workflows/lab3.yml-disabled']
   workflow_dispatch:
 permissions:
   contents: write

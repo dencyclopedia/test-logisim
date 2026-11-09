@@ -1,0 +1,178 @@
+# logisim.dev lab round 4 (no-hardware model): macOS retry (first paint, Gatekeeper, menus), Debian container as the
+# Chromebook (Crostini) stand-in, AUR with unzip, Windows Server 2022 as the Windows 10 stand-in, WebKit iPad emulation.
+name: lab-round4
+on:
+  push:
+    paths: ['.github/workflows/lab4.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+env:
+  VER: '5.0.0'
+  BASE: https://github.com/logisim-evolution/logisim-evolution/releases/download/v5.0.0
+  L271: https://downloads.sourceforge.net/project/circuit/2.7.x/2.7.1/logisim-generic-2.7.1.jar
+
+jobs:
+  macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: macos-15, dmg: aarch64 }
+          - { os: macos-14, dmg: aarch64 }
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    defaults: { run: { shell: 'bash {0}' } }
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install DMG; first paint and click; menus
+        run: |
+          o=out/${{ matrix.os }}; mkdir -p $o; sw_vers > $o/machine.txt
+          n=logisim-evolution-$VER-${{ matrix.dmg }}.dmg; curl -sSL -o $n "$BASE/$n"; hdiutil attach -nobrowse $n > /dev/null
+          vol=$(ls -d /Volumes/* | grep -i logisim | head -1); cp -R "$vol"/*.app /Applications/; A=$(ls -d /Applications/Logisim*.app | head -1); echo "$A" > $o/app-path.txt
+          brew install cliclick > /dev/null 2>&1
+          system_profiler SPDisplaysDataType > $o/display.txt 2>&1
+          "$A/Contents/MacOS/Logisim-evolution" --no-splash $PWD/lab/circuits/wire-colours-no-width-v5.circ > $o/gui-stdout.txt 2>&1 &
+          sleep 30; screencapture -x $o/gui-native-v5-before-click.png
+          cliclick m:900,500; sleep 2; screencapture -x $o/gui-native-v5-after-mousemove.png
+          cliclick c:900,500; sleep 3; screencapture -x $o/gui-native-v5-after-click.png
+          for m in File Edit Project Simulate Window Help; do
+            osascript -e "tell application \"System Events\" to tell (first process whose name contains \"ogisim\") to click menu bar item \"$m\" of menu bar 1" >> $o/osascript.txt 2>&1
+            sleep 1.5; screencapture -x $o/menu-$m.png; osascript -e 'tell application "System Events" to key code 53' >/dev/null 2>&1; sleep 1
+          done
+          pkill -f Logisim-evolution; sleep 2
+      - name: Gatekeeper dialog for a quarantined copy
+        run: |
+          o=out/${{ matrix.os }}; A=$(cat $o/app-path.txt)
+          spctl --status > $o/spctl-status.txt 2>&1
+          rm -rf /tmp/q && mkdir /tmp/q && cp -R "$A" /tmp/q/; Q=$(ls -d /tmp/q/*.app)
+          xattr -w com.apple.quarantine "0083;$(printf %x $(date +%s));Safari;" "$Q"
+          open "$Q" > $o/open-quarantined.txt 2>&1; echo "exit=$?" >> $o/open-quarantined.txt
+          sleep 12; screencapture -x $o/gatekeeper-dialog-01.png
+          pgrep -fl -i logisim > $o/after-open-processes.txt 2>&1 || echo "no logisim process" > $o/after-open-processes.txt
+          osascript -e 'tell application "System Events" to get {name, title of every window} of every process whose visible is true' > $o/visible-windows.txt 2>&1
+          log show --last 3m --predicate 'process == "syspolicyd"' --style compact 2>/dev/null | tail -60 > $o/syspolicy-log.txt
+          pkill -f -i logisim; true
+      - name: Classic 2.7.1 jar on macOS with Java 21
+        run: |
+          o=out/${{ matrix.os }}; curl -sSL -A Wget -o l271.jar "$L271"; shasum -a 256 l271.jar > $o/l271-hash.txt
+          java -version > $o/l271-java.txt 2>&1
+          java -jar l271.jar > $o/l271-stdout.txt 2>&1 & sleep 15; screencapture -x $o/l271-gui.png; pkill -f l271.jar; true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: 'mac-${{ matrix.os }}', path: out }
+
+  debian-crostini:
+    runs-on: ubuntu-24.04
+    container: debian:bookworm
+    defaults: { run: { shell: 'bash {0}' } }
+    steps:
+      - uses: actions/checkout@v4
+      - name: Official .deb in Debian 12 (the container ChromeOS uses for Linux apps)
+        run: |
+          o=out/debian; mkdir -p $o; cat /etc/os-release > $o/machine.txt
+          apt-get update -q > /dev/null; apt-get install -y -q curl ca-certificates > /dev/null
+          n=logisim-evolution_${VER}_amd64.deb; curl -sSL -o $n "$BASE/$n"
+          s=$(date +%s); apt-get install -y ./$n > $o/install.txt 2>&1; echo "exit=$? seconds=$(( $(date +%s)-s ))" >> $o/install.txt
+          /opt/logisim-evolution/bin/logisim-evolution --version > $o/version.txt 2>&1
+          /opt/logisim-evolution/bin/logisim-evolution --tty table lab/circuits/full-adder-v5.circ > $o/tty-full-adder.txt 2>&1
+          apt-cache policy logisim default-jre > $o/apt-policy.txt 2>&1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: debian, path: out }
+
+  arch-aur:
+    runs-on: ubuntu-24.04
+    container: archlinux:latest
+    defaults: { run: { shell: 'bash {0}' } }
+    steps:
+      - uses: actions/checkout@v4
+      - name: AUR logisim-evolution-bin with unzip present
+        run: |
+          o=out/arch; mkdir -p $GITHUB_WORKSPACE/$o
+          pacman -Syu --noconfirm base-devel git sudo unzip > /dev/null 2>&1
+          useradd -m builder; echo 'builder ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/builder
+          sudo -u builder git clone -q https://aur.archlinux.org/logisim-evolution-bin.git /home/builder/p
+          cp /home/builder/p/PKGBUILD $GITHUB_WORKSPACE/$o/PKGBUILD.txt
+          cd /home/builder/p; s=$(date +%s); sudo -u builder makepkg -si --noconfirm > /tmp/mk.txt 2>&1; echo "exit=$? seconds=$(( $(date +%s)-s ))" >> /tmp/mk.txt
+          tail -25 /tmp/mk.txt > $GITHUB_WORKSPACE/$o/makepkg.txt; cd $GITHUB_WORKSPACE
+          pacman -Qi logisim-evolution-bin > $o/installed.txt 2>&1; pacman -Q jdk-openjdk jre-openjdk >> $o/installed.txt 2>&1
+          B=$(pacman -Ql logisim-evolution-bin | awk '{print $2}' | grep -E 'bin/logisim' | head -1); echo "launcher=$B" >> $o/installed.txt
+          "$B" --version > $o/version.txt 2>&1
+          "$B" --tty table lab/circuits/full-adder-v5.circ > $o/tty-full-adder.txt 2>&1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: arch, path: out }
+
+  windows-2022:
+    runs-on: windows-2022
+    defaults: { run: { shell: pwsh } }
+    steps:
+      - uses: actions/checkout@v4
+      - name: MSI install, launch, screenshot (Windows 10-era platform)
+        continue-on-error: true
+        run: |
+          $o = "out/windows-2022"; New-Item -ItemType Directory -Force $o | Out-Null
+          $os = Get-CimInstance Win32_OperatingSystem; "$($os.Caption) $($os.Version)" | Out-File "$o/machine.txt"
+          Invoke-WebRequest "$env:BASE/logisim-evolution-$env:VER-amd64.msi" -OutFile le.msi
+          $p = Start-Process msiexec -ArgumentList "/i le.msi /qn /norestart" -Wait -PassThru; "exit=$($p.ExitCode)" | Out-File "$o/msi-install.txt"
+          & 'C:\Program Files\logisim-evolution\logisim-evolution.exe' --version 2>&1 | Out-File "$o/version.txt"
+          Add-Type -AssemblyName System.Windows.Forms, System.Drawing
+          Start-Process 'C:\Program Files\logisim-evolution\logisim-evolution.exe' -ArgumentList ('"' + (Resolve-Path lab/circuits/full-adder-v5.circ).Path + '"')
+          Start-Sleep 25
+          $b = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds; $bmp = New-Object System.Drawing.Bitmap $b.Width, $b.Height
+          $g = [System.Drawing.Graphics]::FromImage($bmp); $g.CopyFromScreen($b.Location, [System.Drawing.Point]::Empty, $b.Size); $bmp.Save("$o/gui.png")
+          Get-Process | Where-Object { $_.ProcessName -like '*ogisim*' } | Stop-Process -Force
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: windows-2022, path: out }
+
+  web-emulation:
+    runs-on: ubuntu-24.04
+    defaults: { run: { shell: 'bash {0}' } }
+    steps:
+      - uses: actions/checkout@v4
+      - name: logisim.app and CircuitVerse in WebKit at iPad and iPhone size
+        run: |
+          o=out/web; mkdir -p $o; npm init -y > /dev/null; npm i -s playwright@1.49.1 > /dev/null 2>&1; npx playwright install --with-deps webkit chromium > /dev/null 2>&1
+          cat > w.js <<'EOF'
+          const { webkit, chromium, devices } = require('playwright');
+          (async () => {
+            const res = {};
+            for (const [eng, dev] of [[webkit, 'iPad (gen 7)'], [webkit, 'iPhone 13'], [chromium, 'Pixel 7']]) {
+              const b = await eng.launch(); const ctx = await b.newContext({ ...devices[dev] }); const p = await ctx.newPage();
+              for (const [name, url] of [['logisim-app', 'https://logisim.app/'], ['circuitverse', 'https://circuitverse.org/simulator']]) {
+                const t0 = Date.now(); let err = null;
+                try { await p.goto(url, { waitUntil: 'load', timeout: 90000 }); } catch (e) { err = String(e); }
+                await p.waitForTimeout(25000);
+                const tag = `${name}-${dev.replace(/[^A-Za-z0-9]+/g, '-')}`;
+                await p.screenshot({ path: `out/web/${tag}.png` });
+                res[tag] = { engine: eng.name(), device: dev, load_ms: Date.now() - t0 - 25000, error: err,
+                  text: await p.evaluate(() => document.body ? document.body.innerText.slice(0, 300) : '') };
+              }
+              await b.close();
+            }
+            require('fs').writeFileSync('out/web/web-emulation.json', JSON.stringify(res, null, 1));
+          })();
+          EOF
+          sed -i 's/^          //' w.js; node w.js > $o/run.txt 2>&1; echo "exit=$?" >> $o/run.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: web, path: out }
+
+  commit:
+    needs: [macos, debian-crostini, arch-aur, windows-2022, web-emulation]
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { path: artifacts }
+      - name: Commit results
+        run: |
+          d=results/round4-$(date -u +%Y-%m-%d)-run${{ github.run_number }}
+          mkdir -p $d; for a in artifacts/*; do cp -R $a/* $d/; done
+          echo "run=${{ github.run_id }} sha=${{ github.sha }} date=$(date -u +%FT%TZ)" > $d/RUN.txt
+          git config user.name 'logisim.dev lab'; git config user.email 'lab@users.noreply.github.com'
+          git add results; git commit -m "Lab round 4 results run ${{ github.run_number }}" || exit 0
+          git pull --rebase origin ${{ github.ref_name }}; git push origin HEAD:${{ github.ref_name }}
