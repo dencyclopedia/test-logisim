@@ -1,0 +1,3 @@
+345 /System/Library/CoreServices/CoreServicesUIAgent.app/Contents/MacOS/CoreServicesUIAgent
+2497 open /tmp/q/Logisim-evolution.app
+2500 /private/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/AppTranslocation/2CAB374D-05E5-4819-ADBA-5A2E543D026F/d/Logisim-evolution.app/Contents/MacOS/Logisim-evolution
