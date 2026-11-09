@@ -1,0 +1,5 @@
+{
+  "Status": 2,
+  "StatusMessage": "The file D:\\a\\test-logisim\\test-logisim\\logisim-evolution-5.0.0-amd64.msi is not digitally signed. You cannot run this script on the current system. For more information about running scripts and setting execution policy, see about_Execution_Policies at https://go.microsoft.com/fwlink/?LinkID=135170",
+  "Signer": null
+}

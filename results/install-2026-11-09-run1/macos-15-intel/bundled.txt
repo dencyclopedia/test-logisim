@@ -1,0 +1,2 @@
+java= jar=/Applications/Logisim-evolution.app/Contents/app/logisim-evolution-5.1.0dev-all.jar
+/Users/runner/work/_temp/5b9c3bb9-dd60-4aff-b09c-978be5f8835e.sh: line 3: : command not found

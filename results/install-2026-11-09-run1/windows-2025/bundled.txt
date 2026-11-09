@@ -1,0 +1,2 @@
+java=
+jar=C:\Program Files\logisim-evolution\app\logisim-evolution-5.0.0-all.jar

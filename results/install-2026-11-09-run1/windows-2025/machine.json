@@ -1,0 +1,7 @@
+{
+  "arch": "AMD64",
+  "caption": "Microsoft Windows Server 2025 Datacenter",
+  "runner": "windows-2025",
+  "version": "10.0.26100",
+  "java_on_path": true
+}
