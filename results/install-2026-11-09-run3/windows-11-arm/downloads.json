@@ -1,0 +1,20 @@
+[
+  {
+    "name": "logisim-evolution-5.0.0-aarch64.msi",
+    "bytes": 77194873,
+    "sha256": "5a2a57d58fa60328dd9dc8a69085ba88060f8cf7347a9deca41c3ef3b42a6c8a",
+    "download_s": 1.3
+  },
+  {
+    "name": "logisim-evolution-5.0.0-windows-aarch64.zip",
+    "bytes": 75421328,
+    "sha256": "38c23d3187893aa2791ca3675bc7feacb209cc87d976f9c4c30a10c3692a88aa",
+    "download_s": 0.8
+  },
+  {
+    "name": "logisim-evolution-5.0.0-all.jar",
+    "bytes": 54448596,
+    "sha256": "6b368e894742c04cc83aa9830f869bcab0190ede4df43ad6fecdb89b3a23a41c",
+    "download_s": 0.6
+  }
+]

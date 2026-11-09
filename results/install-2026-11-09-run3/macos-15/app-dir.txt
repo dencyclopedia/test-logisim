@@ -1,0 +1,6 @@
+total 106368
+drwxr-xr-x  5 runner  admin       160 Nov  9 15:41 .
+drwxr-xr-x  9 runner  admin       288 Nov  9 15:41 ..
+-rw-r--r--  1 runner  admin        17 Nov  9 15:41 .package
+-rw-r--r--  1 runner  admin  54448597 Nov  9 15:41 logisim-evolution-5.0.0-all.jar
+-rw-r--r--  1 runner  admin       211 Nov  9 15:41 Logisim-evolution.cfg

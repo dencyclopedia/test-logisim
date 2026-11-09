@@ -1,0 +1,65 @@
+
+   - 
+                                                                                                                        
+
+  ████████▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒  1024 KB / 3.73 MB
+  ████████████████▒▒▒▒▒▒▒▒▒▒▒▒▒▒  2.00 MB / 3.73 MB
+  ████████████████████████▒▒▒▒▒▒  3.00 MB / 3.73 MB
+  ██████████████████████████████  3.73 MB / 3.73 MB
+                                                                                                                        
+
+  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒  0%
+  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒  0%
+  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒  1%
+  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒  2%
+  ███████████████████▒▒▒▒▒▒▒▒▒▒▒  65%
+  ██████████████████████▒▒▒▒▒▒▒▒  75%
+  █████████████████████████▒▒▒▒▒  84%
+  ███████████████████████████▒▒▒  92%
+  ███████████████████████████▒▒▒  92%
+  ██████████████████████████████  100%
+                                                                                                                        
+The `msstore` source requires that you view the following agreements before using.
+Terms of Transaction: https://aka.ms/microsoft-store-terms-of-transaction
+The source requires the current machine's 2-letter geographic region to be sent to the backend service to function properly (ex. "US").
+
+Found Logisim-evolution [logisim-evolution.logisim-evolution]
+Version: 5.0.0
+Publisher: logisim-evolution developers
+Publisher Url: https://github.com/logisim-evolution
+Publisher Support Url: https://github.com/logisim-evolution/logisim-evolution/issues
+Description: Digital logic design tool and simulator
+Homepage: https://github.com/logisim-evolution/logisim-evolution
+License: GPL-3.0
+License Url: https://github.com/logisim-evolution/logisim-evolution/blob/HEAD/LICENSE.md
+Release Notes:
+  - v5.0.0 (2026-09-12)
+    - Added Find Action omni-search with fuzzy and acronym matching.
+    - Added image component support for custom bitmap images in circuits and subcircuit appearances.
+    - Added new components including Real-Time Clock, Floating Point Constant, and multiple TTL devices.
+    - Improved dark theme color synchronization across canvas, components, icons, and wires.
+    - Improved timing diagram recording/exports and custom circuit appearance editing behavior.
+    - Improved memory/hex editor tools, including go-to-address and clearer RAM behavior labels.
+    - Improved project editing stability, view persistence, and text-editing undo/redo behavior.
+    - Improved command-line behavior and localization, including nonzero exit on invalid options.
+    - Fixed Java accessibility runtime launch failures and various HDL/FPGA generation issues.
+    - Many other bug fixes and documentation updates.
+Release Notes Url: https://github.com/logisim-evolution/logisim-evolution/releases/tag/v5.0.0
+Tags:
+  circuit
+  diagram
+  digital
+  education
+  java
+  logic
+  logisim
+  simulator
+  verilog
+  vhdl
+Installer:
+  Installer Type: wix
+  Installer Locale: en-US
+  Installer Url: https://github.com/logisim-evolution/logisim-evolution/releases/download/v5.0.0/logisim-evolution-5.0.0-amd64.msi
+  Installer SHA256: a6eb97f814bb4ca0f083efe3e44081af94fe528b5c480bcc8380b4e741bb9b65
+  Release Date: 2026-09-12
+  Offline Distribution Supported: true

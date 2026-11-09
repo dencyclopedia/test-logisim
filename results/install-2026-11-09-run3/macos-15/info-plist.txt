@@ -1,0 +1,48 @@
+{
+  "CFBundleAllowMixedLocalizations" => 1
+  "CFBundleDevelopmentRegion" => "English"
+  "CFBundleDocumentTypes" => [
+    0 => {
+      "CFBundleTypeIconFile" => "Logisim-evolution-circ.icns"
+      "CFBundleTypeName" => "Logisim circuit file"
+      "CFBundleTypeRole" => "Editor"
+      "LSHandlerRank" => "Owner"
+      "LSIsAppleDefaultForType" => 1
+      "LSItemContentTypes" => [
+        0 => "com.cburch.logisim.circ"
+      ]
+    }
+  ]
+  "CFBundleExecutable" => "Logisim-evolution"
+  "CFBundleIconFile" => "Logisim-evolution.icns"
+  "CFBundleIdentifier" => "com.cburch.logisim"
+  "CFBundleInfoDictionaryVersion" => "6.0"
+  "CFBundleName" => "Logisim-evolution"
+  "CFBundlePackageType" => "APPL"
+  "CFBundleShortVersionString" => "5.0.0"
+  "CFBundleSignature" => "????"
+  "CFBundleVersion" => "5.0.0"
+  "LSApplicationCategoryType" => "public.app-category.education"
+  "LSMinimumSystemVersion" => "10.11"
+  "NSHighResolutionCapable" => "true"
+  "NSHumanReadableCopyright" => "Copyright ©2001–2026 logisim-evolution developers"
+  "NSMicrophoneUsageDescription" => "The application Logisim-evolution is requesting access to the microphone."
+  "UTExportedTypeDeclarations" => [
+    0 => {
+      "UTTypeConformsTo" => [
+        0 => "public.data"
+      ]
+      "UTTypeDescription" => "Logisim circuit file"
+      "UTTypeIconFile" => "Logisim-evolution-circ.icns"
+      "UTTypeIdentifier" => "com.cburch.logisim.circ"
+      "UTTypeTagSpecification" => {
+        "public.filename-extension" => [
+          0 => "circ"
+        ]
+        "public.mime-type" => [
+          0 => "application/x-logisim-circuit"
+        ]
+      }
+    }
+  ]
+}

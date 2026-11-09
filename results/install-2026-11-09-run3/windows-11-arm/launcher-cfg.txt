@@ -1,0 +1,7 @@
+[Application]
+app.classpath=$APPDIR\logisim-evolution-5.0.0-all.jar
+app.mainclass=com.cburch.logisim.Main
+
+[JavaOptions]
+java-options=-Djpackage.app-version=5.0.0
+java-options=--enable-native-access=ALL-UNNAMED

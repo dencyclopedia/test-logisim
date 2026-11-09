@@ -1,0 +1,3 @@
+launcher=/opt/logisim-evolution/bin/logisim-evolution
+java= jar=/opt/logisim-evolution/lib/app/logisim-evolution-5.0.0-all.jar
+/home/runner/work/_temp/b3112129-5e14-48e7-abb3-33493b49f997.sh: line 13: : command not found

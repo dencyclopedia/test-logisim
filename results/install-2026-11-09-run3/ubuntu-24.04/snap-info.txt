@@ -1,0 +1,28 @@
+name:      logisim-evolution
+summary:   Digital logic design tool and simulator
+publisher: Logisim-Evolution (logisim-evolution)
+store-url: https://snapcraft.io/logisim-evolution
+contact:   https://github.com/logisim-evolution/logisim-evolution/discussions
+license:   GPL-3.0
+description: |
+  Logisim-evolution is educational software for designing and simulating
+  digital logic circuits.
+  Logisim-evolution is free, open-source, and cross-platform.
+  
+  Project highlights:
+   * easy to use circuit designer,
+   * logic circuit simulations,
+   * chronogram (to see the evolution of signals in your circuit),
+   * electronic board integration (schematics can be simulated on real
+   hardware),
+   * VHDL components (components behavior can be specified in VHDL!),
+   * TCL/TK console (interfaces between the circuit and the user),
+   * huge library of components (LEDs, TTLs, switches, SoCs),
+   * supports multiple languages,
+   * and more!
+snap-id: CzzfrpKG7K0IJ6YYGToEYHOA7pTNpLue
+channels:
+  latest/stable:    3.8.0     2023-03-02 (4) 215MB -
+  latest/candidate: ^                              
+  latest/beta:      ^                              
+  latest/edge:      3.8.0-dev 2022-09-25 (3) 129MB -

@@ -1,0 +1,12 @@
+[32m==>[0m [1mlogisim-evolution[0m (Logisim Evolution): 4.1.0
+Digital logic designer and simulator
+[4mhttps://github.com/logisim-evolution/logisim-evolution[24m
+Disabled because it does not pass the macOS Gatekeeper check! It was disabled on 2026-09-01.
+Not installed
+From: [4mhttps://github.com/Homebrew/homebrew-cask/blob/HEAD/Casks/l/logisim-evolution.rb[24m
+[34m==>[0m [1mRequirements[0m
+Required: macOS
+[34m==>[0m [1mArtifacts[0m
+Logisim-evolution.app (App)
+[34m==>[0m [1mAnalytics[0m
+install: 0 (30 days), 91 (90 days), 1,501 (365 days)

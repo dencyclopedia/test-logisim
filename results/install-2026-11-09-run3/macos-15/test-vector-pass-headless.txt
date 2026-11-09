@@ -1,0 +1,15 @@
+Exception in thread "main" java.awt.HeadlessException
+	at java.desktop/java.awt.GraphicsEnvironment.checkHeadless(GraphicsEnvironment.java:164)
+	at java.desktop/java.awt.Window.<init>(Window.java:553)
+	at java.desktop/java.awt.Frame.<init>(Frame.java:428)
+	at java.desktop/java.awt.Frame.<init>(Frame.java:393)
+	at java.desktop/javax.swing.SwingUtilities$SharedOwnerFrame.<init>(SwingUtilities.java:1925)
+	at java.desktop/javax.swing.SwingUtilities.getSharedOwnerFrame(SwingUtilities.java:2001)
+	at java.desktop/javax.swing.JOptionPane.getRootFrame(JOptionPane.java:1696)
+	at java.desktop/javax.swing.JOptionPane.showOptionDialog(JOptionPane.java:875)
+	at java.desktop/javax.swing.JOptionPane.showMessageDialog(JOptionPane.java:677)
+	at java.desktop/javax.swing.JOptionPane.showMessageDialog(JOptionPane.java:648)
+	at java.desktop/javax.swing.JOptionPane.showMessageDialog(JOptionPane.java:619)
+	at com.cburch.logisim.gui.generic.OptionPane.showMessageDialog(OptionPane.java:53)
+	at com.cburch.logisim.Main.main(Main.java:89)
+exit=1

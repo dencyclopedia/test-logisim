@@ -1,0 +1,17 @@
+/Applications/Logisim-evolution.app/Contents
+/Applications/Logisim-evolution.app/Contents/_CodeSignature
+/Applications/Logisim-evolution.app/Contents/_CodeSignature/CodeResources
+/Applications/Logisim-evolution.app/Contents/MacOS
+/Applications/Logisim-evolution.app/Contents/MacOS/Logisim-evolution
+/Applications/Logisim-evolution.app/Contents/app
+/Applications/Logisim-evolution.app/Contents/app/logisim-evolution-5.1.0dev-all.jar
+/Applications/Logisim-evolution.app/Contents/app/.jpackage.xml
+/Applications/Logisim-evolution.app/Contents/app/.package
+/Applications/Logisim-evolution.app/Contents/app/Logisim-evolution.cfg
+/Applications/Logisim-evolution.app/Contents/Resources
+/Applications/Logisim-evolution.app/Contents/Resources/Logisim-evolution-circ.icns
+/Applications/Logisim-evolution.app/Contents/Resources/Logisim-evolution.icns
+/Applications/Logisim-evolution.app/Contents/runtime
+/Applications/Logisim-evolution.app/Contents/runtime/Contents
+/Applications/Logisim-evolution.app/Contents/Info.plist
+/Applications/Logisim-evolution.app/Contents/PkgInfo

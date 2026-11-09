@@ -1,0 +1,13 @@
+Loading test vector �lab/circuits/full-adder-pass.txt��
+Running 8 vectors�
+1 
+2 
+3 
+4 
+5 
+6 
+7 
+8 
+
+Passed: 8, Failed: 0
+exit=0
