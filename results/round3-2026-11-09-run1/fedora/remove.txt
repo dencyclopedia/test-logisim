@@ -1,0 +1,19 @@
+Package            Arch   Version   Repository      Size
+Removing:
+ logisim-evolution x86_64 0:5.0.0-1 <unknown>  139.3 MiB
+
+Transaction Summary:
+ Removing:           1 package
+
+After this operation, 139 MiB will be freed (install 0 B, remove 139 MiB).
+Running transaction
+[1/2] Prepare transaction               100% |  13.0   B/s |   1.0   B |  00m00s
+>>> Running %preun scriptlet: logisim-evolution-0:5.0.0-1.x86_64
+>>> Error in %preun scriptlet: logisim-evolution-0:5.0.0-1.x86_64
+>>> Scriptlet output:
+>>> xdg-mime: No writable system mimetype directory found.
+>>> xdg-icon-resource: No writable system icon directory found.
+>>> 
+>>> [RPM] %preun(logisim-evolution-5.0.0-1.x86_64) scriptlet failed, exit status 3
+Transaction failed: Rpm transaction failed.
+exit=1

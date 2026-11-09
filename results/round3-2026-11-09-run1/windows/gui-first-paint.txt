@@ -1,0 +1,1 @@
+window_found_after_s=4 title=main of wire-colours-no-width-v5 · Logisim-evolution v5.0.0

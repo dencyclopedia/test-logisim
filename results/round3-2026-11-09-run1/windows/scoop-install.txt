@@ -1,0 +1,1 @@
+Installing 'logisim-evolution' (5.0.0) [64bit] from 'extras' bucket

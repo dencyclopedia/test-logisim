@@ -1,0 +1,45 @@
+
+
+   - 
+                                                                                                                        
+
+   - 
+                                                                                                                        
+Found Logisim-evolution [logisim-evolution.logisim-evolution] Version 5.0.0
+This application is licensed to you by its owner.
+Microsoft is not responsible for, nor does it grant any licenses to, third-party packages.
+Downloading https://github.com/logisim-evolution/logisim-evolution/releases/download/v5.0.0/logisim-evolution-5.0.0-amd64.msi
+
+   - 
+   \ 
+   | 
+   / 
+   - 
+   \ 
+                                                                                                                        
+
+Successfully verified installer hash
+Starting package install...
+
+   - 
+   \ 
+   | 
+   / 
+   - 
+   \ 
+   | 
+   / 
+   - 
+   \ 
+   | 
+   / 
+   - 
+   \ 
+   | 
+   / 
+   - 
+   \ 
+                                                                                                                        
+Successfully installed
+
+seconds=10.2 exit=0

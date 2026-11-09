@@ -1,0 +1,18 @@
+Installing runtime/org.freedesktop.Platform.GL.default/x86_64/25.08
+Installing runtime/org.freedesktop.Platform.GL.default/x86_64/25.08-extra
+Installing runtime/org.freedesktop.Platform.Locale/x86_64/25.08
+Installing runtime/org.freedesktop.Platform.codecs-extra/x86_64/25.08-extra
+Installing runtime/org.freedesktop.Platform/x86_64/25.08
+Installing app/com.github.reds.LogisimEvolution/x86_64/stable
+
+Note that '/var/lib/flatpak/exports/share' is not in the search path
+set by the XDG_DATA_HOME and XDG_DATA_DIRS
+environment variables, so applications may not
+be able to find it until you set them. The
+directories currently searched are:
+
+- /root/.local/share
+- /usr/local/share/
+- /usr/share/
+
+exit=0 seconds=47

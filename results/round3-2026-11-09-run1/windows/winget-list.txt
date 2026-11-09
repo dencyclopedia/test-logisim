@@ -1,0 +1,11 @@
+
+
+   - 
+                                                                                                                        
+
+   - 
+                                                                                                                        
+Name              Id                                  Version Source
+---------------------------------------------------------------------
+logisim-evolution logisim-evolution.logisim-evolution 5.0.0   winget
+

@@ -1,0 +1,12 @@
+
+Name        : logisim-evolution
+Description : Digital logic design tool and simulator
+Version     : 5.0.0
+Source      : extras
+Website     : https://github.com/logisim-evolution/logisim-evolution
+License     : GPL-3.0-only
+Updated at  : 9/12/2026 8:33:02 AM
+Updated by  : github-actions[bot]
+Shortcuts   : logisim-evolution
+Suggestions : java/openjdk | java/oraclejdk
+

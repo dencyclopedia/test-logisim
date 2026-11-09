@@ -1,0 +1,6 @@
+/bin/sh
+/bin/sh
+/bin/sh
+rpmlib(LargeFiles) <= 4.12.0-1
+rpmlib(PayloadIsZstd) <= 5.4.18-1
+xdg-utils

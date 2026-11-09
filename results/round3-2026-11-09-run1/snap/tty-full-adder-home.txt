@@ -1,0 +1,10 @@
+Picked up _JAVA_OPTIONS: -Duser.home=/home/runner/snap/logisim-evolution/4
+A B Cin S Cout
+0 0   0 0    0
+0 0   1 1    0
+0 1   0 1    0
+0 1   1 0    1
+1 0   0 1    0
+1 0   1 0    1
+1 1   0 0    1
+1 1   1 1    1

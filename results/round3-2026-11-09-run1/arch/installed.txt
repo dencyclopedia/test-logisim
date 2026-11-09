@@ -1,0 +1,2 @@
+error: package 'logisim-evolution-bin' was not found
+launcher=

@@ -1,0 +1,6 @@
+pkgver=4.1.0
+pkgrel=1
+depends=('java-runtime>=21' 'hicolor-icon-theme')
+makedepends=('java-environment>=21')
+source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz"
+448224794201cb8e814780a8069455925f48a048 Thu Feb 19 12:25:43 2026 +0300

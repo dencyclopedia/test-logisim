@@ -1,0 +1,16 @@
+/opt/logisim-evolution/bin/logisim-evolution
+/opt/logisim-evolution/lib/app/logisim-evolution-5.0.0-all.jar
+/opt/logisim-evolution/lib/logisim-evolution-logisim-evolution.desktop
+/opt/logisim-evolution/lib/runtime/legal/java.desktop
+/opt/logisim-evolution/lib/runtime/legal/java.desktop/COPYRIGHT
+/opt/logisim-evolution/lib/runtime/legal/java.desktop/LICENSE
+/opt/logisim-evolution/lib/runtime/legal/java.desktop/colorimaging.md
+/opt/logisim-evolution/lib/runtime/legal/java.desktop/giflib.md
+/opt/logisim-evolution/lib/runtime/legal/java.desktop/harfbuzz.md
+/opt/logisim-evolution/lib/runtime/legal/java.desktop/jpeg.md
+/opt/logisim-evolution/lib/runtime/legal/java.desktop/lcms.md
+/opt/logisim-evolution/lib/runtime/legal/java.desktop/libpng.md
+/opt/logisim-evolution/lib/runtime/legal/java.desktop/mesa3d.md
+/opt/logisim-evolution/lib/runtime/legal/java.desktop/pipewire.md
+/opt/logisim-evolution/lib/runtime/legal/java.desktop/xwd.md
+/opt/logisim-evolution/lib/runtime/lib/jrt-fs.jar

@@ -1,0 +1,14 @@
+        ID: com.github.reds.LogisimEvolution
+       Ref: app/com.github.reds.LogisimEvolution/x86_64/stable
+      Arch: x86_64
+    Branch: stable
+Collection: org.flathub.Stable
+  Download: 122.4 MB
+ Installed: 262.4 MB
+   Runtime: org.freedesktop.Platform/x86_64/25.08
+       Sdk: org.freedesktop.Sdk/x86_64/25.08
+
+    Commit: 42268bdf2d94d45a2ac11320610d9e9db5807424b9ecd02db8d76497364eb45a
+    Parent: 0925a90297e560a22ff6cd692bef5175f0bcc2fce7cb19685d6b9feb0872a026
+   Subject: Update LogisimEvolution module (5d1754ef7692)
+      Date: 2026-09-13 06:51:50 +0000

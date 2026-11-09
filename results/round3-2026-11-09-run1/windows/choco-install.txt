@@ -1,0 +1,23 @@
+Chocolatey v2.7.5
+Installing the following packages:
+logisim-evolution
+By installing, you accept licenses for the packages.
+Downloading package from source 'https://community.chocolatey.org/api/v2/'
+
+logisim-evolution v5.0.0 [Approved]
+logisim-evolution package files install completed. Performing other installation steps.
+Downloading logisim-evolution 
+  from 'https://github.com/logisim-evolution/logisim-evolution/releases/download/v5.0.0/logisim-evolution-5.0.0-all.jar'
+
+Download of logisim-evolution.jar (51.93 MB) completed.
+Hashes match.
+C:\ProgramData\chocolatey\lib\logisim-evolution\tools\logisim-evolution.jar
+WARNING: You can launch "Logisim Evolution" from the start menu.
+WARNING: Note: Java needs to be installed before using Logisim Evolution.
+ The install of logisim-evolution was successful.
+  Software install location not explicitly set, it could be in package or
+  default install location of installer.
+
+Chocolatey installed 1/1 packages. 
+ See the log for details (C:\ProgramData\chocolatey\logs\chocolatey.log).
+seconds=17.6

@@ -1,0 +1,6 @@
+pkgver=5.0.0
+pkgrel=1
+depends=('java-runtime>=16' 'hicolor-icon-theme')
+makedepends=('java-environment>=10')
+source=("${_name}-${pkgver}.jar::${url}/releases/download/v${pkgver}/logisim-evolution-${pkgver}-all.jar"
+97c62c18ea7388a6382a87496d3b802ec0c7b8e8 Sat Sep 12 12:03:32 2026 +0200

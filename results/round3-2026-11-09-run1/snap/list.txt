@@ -1,0 +1,2 @@
+Name               Version  Rev  Tracking       Publisher          Notes
+logisim-evolution  3.8.0    4    latest/stable  logisim-evolution  -

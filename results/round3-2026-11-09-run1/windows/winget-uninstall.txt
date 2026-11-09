@@ -1,0 +1,23 @@
+
+
+   - 
+                                                                                                                        
+
+   - 
+                                                                                                                        
+Found logisim-evolution [logisim-evolution.logisim-evolution]
+Starting package uninstall...
+
+   - 
+   \ 
+   | 
+   / 
+   - 
+   \ 
+   | 
+   / 
+   - 
+   \ 
+                                                                                                                        
+Successfully uninstalled
+

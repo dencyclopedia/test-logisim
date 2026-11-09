@@ -1,0 +1,17 @@
+Name         : logisim-evolution
+Version      : 5.0.0
+Release      : 1
+Architecture : x86_64
+Install Date : (not installed)
+Group        : Unspecified
+Size         : 146014221
+License      : Unknown
+Signature    : (none)
+Source RPM   : logisim-evolution-5.0.0-1.src.rpm
+Build Date   : Sat Sep 12 04:08:40 2026
+Build Host   : Merlin
+Relocations  : /opt
+Vendor       : logisim-evolution developers
+Summary      : logisim-evolution
+Description  :
+Digital logic design tool and simulator

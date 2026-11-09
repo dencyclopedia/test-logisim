@@ -1,0 +1,2 @@
+Matched fields: name, summary
+ logisim-evolution.x86_64	logisim-evolution
