@@ -4,7 +4,7 @@
 name: install-lab
 on:
   push:
-    paths: ['.github/workflows/lab.yml', 'lab/**']
+    paths: ['.github/workflows/lab.yml']
   workflow_dispatch:
 permissions:
   contents: write

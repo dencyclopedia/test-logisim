@@ -1,0 +1,241 @@
+# logisim.dev lab round 3: package channels (Flatpak, Snap, Fedora RPM, Arch AUR, winget, Chocolatey, Scoop),
+# GUI behaviour on real Windows and macOS desktops (first paint, Gatekeeper dialog), classic 2.7.1 on Windows/macOS.
+# Every step records what it saw; nothing fails the job. Results are committed to results/round3-<date>-run<N>/.
+name: lab-round3
+on:
+  push:
+    paths: ['.github/workflows/lab3.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+env:
+  VER: '5.0.0'
+  BASE: https://github.com/logisim-evolution/logisim-evolution/releases/download/v5.0.0
+  L271: https://downloads.sourceforge.net/project/circuit/2.7.x/2.7.1/logisim-generic-2.7.1.jar
+
+jobs:
+  flatpak:
+    runs-on: ubuntu-24.04
+    defaults: { run: { shell: 'bash {0}' } }
+    steps:
+      - uses: actions/checkout@v4
+      - name: Flathub install and run
+        run: |
+          o=out/flatpak; mkdir -p $o
+          sudo apt-get update -q >/dev/null; sudo apt-get install -y -q flatpak xvfb > $o/apt.txt 2>&1
+          sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+          flatpak remote-info flathub com.github.reds.LogisimEvolution > $o/remote-info.txt 2>&1
+          s=$(date +%s); sudo flatpak install -y --noninteractive flathub com.github.reds.LogisimEvolution > $o/install.txt 2>&1; echo "exit=$? seconds=$(( $(date +%s)-s ))" >> $o/install.txt
+          flatpak info com.github.reds.LogisimEvolution > $o/info.txt 2>&1
+          flatpak info --show-permissions com.github.reds.LogisimEvolution > $o/permissions.txt 2>&1
+          flatpak run com.github.reds.LogisimEvolution --version > $o/version.txt 2>&1
+          flatpak run --filesystem=$PWD com.github.reds.LogisimEvolution --tty table $PWD/lab/circuits/full-adder-v5.circ > $o/tty-full-adder.txt 2>&1
+          flatpak run com.github.reds.LogisimEvolution --tty table $PWD/lab/circuits/full-adder-v5.circ > $o/tty-without-filesystem-flag.txt 2>&1
+          du -sh /var/lib/flatpak > $o/disk.txt 2>&1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: flatpak, path: out }
+
+  snap:
+    runs-on: ubuntu-24.04
+    defaults: { run: { shell: 'bash {0}' } }
+    steps:
+      - uses: actions/checkout@v4
+      - name: Snap install and run
+        run: |
+          o=out/snap; mkdir -p $o
+          snap info logisim-evolution > $o/info.txt 2>&1
+          s=$(date +%s); sudo snap install logisim-evolution > $o/install.txt 2>&1; echo "exit=$? seconds=$(( $(date +%s)-s ))" >> $o/install.txt
+          snap list logisim-evolution > $o/list.txt 2>&1
+          logisim-evolution --version > $o/version.txt 2>&1 || /snap/bin/logisim-evolution --version >> $o/version.txt 2>&1
+          /snap/bin/logisim-evolution --tty table $PWD/lab/circuits/full-adder-v5.circ > $o/tty-full-adder.txt 2>&1
+          cp lab/circuits/full-adder-v5.circ ~/full-adder-v5.circ; /snap/bin/logisim-evolution --tty table ~/full-adder-v5.circ > $o/tty-full-adder-home.txt 2>&1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: snap, path: out }
+
+  fedora-rpm:
+    runs-on: ubuntu-24.04
+    container: fedora:latest
+    defaults: { run: { shell: 'bash {0}' } }
+    steps:
+      - uses: actions/checkout@v4
+      - name: Official RPM on Fedora
+        run: |
+          o=out/fedora; mkdir -p $o
+          cat /etc/fedora-release > $o/machine.txt
+          dnf -y -q install curl findutils > /dev/null 2>&1
+          n=logisim-evolution-$VER-1.x86_64.rpm; curl -sSL -o $n "$BASE/$n"
+          echo "{\"name\":\"$n\",\"bytes\":$(stat -c%s $n),\"sha256\":\"$(sha256sum $n | cut -d' ' -f1)\"}" > $o/downloads.json
+          rpm -qip $n > $o/rpm-info.txt 2>&1
+          rpm -qp --requires $n > $o/rpm-requires.txt 2>&1
+          s=$(date +%s); dnf -y install ./$n > $o/install.txt 2>&1; echo "exit=$? seconds=$(( $(date +%s)-s ))" >> $o/install.txt
+          rpm -ql logisim-evolution | grep -E '/bin/|\.desktop|\.jar' > $o/files.txt 2>&1
+          B=$(rpm -ql logisim-evolution | grep -E '/bin/logisim-evolution$' | head -1)
+          "$B" --version > $o/version.txt 2>&1
+          "$B" --tty table lab/circuits/full-adder-v5.circ > $o/tty-full-adder.txt 2>&1
+          dnf -y remove logisim-evolution > $o/remove.txt 2>&1; echo "exit=$?" >> $o/remove.txt
+          dnf -q info logisim > $o/dnf-logisim.txt 2>&1; dnf -q search logisim > $o/dnf-search.txt 2>&1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: fedora, path: out }
+
+  arch-aur:
+    runs-on: ubuntu-24.04
+    container: archlinux:latest
+    defaults: { run: { shell: 'bash {0}' } }
+    steps:
+      - uses: actions/checkout@v4
+      - name: AUR logisim-evolution-bin and logisim-evolution
+        run: |
+          o=out/arch; mkdir -p $o
+          pacman -Syu --noconfirm base-devel git sudo > /dev/null 2>&1
+          useradd -m builder; echo 'builder ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/builder
+          for p in logisim-evolution-bin logisim-evolution; do
+            sudo -u builder git clone -q https://aur.archlinux.org/$p.git /home/builder/$p
+            grep -E '^(pkgver|pkgrel|depends|makedepends|source)' /home/builder/$p/PKGBUILD > $o/$p-pkgbuild.txt 2>&1
+            (cd /home/builder/$p && sudo -u builder git log -1 --format='%H %cd' >> /work-$p.txt 2>&1)
+            cat /work-$p.txt >> $o/$p-pkgbuild.txt 2>/dev/null
+          done
+          cd /home/builder/logisim-evolution-bin
+          s=$(date +%s); sudo -u builder makepkg -si --noconfirm > /tmp/makepkg.txt 2>&1; echo "exit=$? seconds=$(( $(date +%s)-s ))" >> /tmp/makepkg.txt
+          tail -40 /tmp/makepkg.txt > $GITHUB_WORKSPACE/$o/makepkg-bin.txt
+          cd $GITHUB_WORKSPACE
+          pacman -Qi logisim-evolution-bin > $o/installed.txt 2>&1
+          B=$(pacman -Ql logisim-evolution-bin | awk '{print $2}' | grep -E '/bin/logisim' | head -1); echo "launcher=$B" >> $o/installed.txt
+          "$B" --version > $o/version.txt 2>&1
+          "$B" --tty table lab/circuits/full-adder-v5.circ > $o/tty-full-adder.txt 2>&1
+          pacman -Ss logisim > $o/pacman-search.txt 2>&1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: arch, path: out }
+
+  windows:
+    runs-on: windows-2025
+    defaults: { run: { shell: pwsh } }
+    steps:
+      - uses: actions/checkout@v4
+      - name: winget install, version, uninstall
+        continue-on-error: true
+        run: |
+          $o = "out/windows"; New-Item -ItemType Directory -Force $o | Out-Null
+          winget --version | Out-File "$o/winget-version.txt"
+          winget show --id logisim-evolution.logisim-evolution -e --accept-source-agreements --disable-interactivity 2>&1 | Select-String -NotMatch '^\s*[-\\|/]?\s*$|█|▒' | Out-File "$o/winget-show.txt"
+          $t = Measure-Command { winget install --id logisim-evolution.logisim-evolution -e --silent --accept-package-agreements --accept-source-agreements --disable-interactivity 2>&1 | Select-String -NotMatch '█|▒' | Out-File "$o/winget-install.txt" }
+          "seconds=$([math]::Round($t.TotalSeconds,1)) exit=$LASTEXITCODE" | Out-File -Append "$o/winget-install.txt"
+          winget list --id logisim-evolution.logisim-evolution -e --disable-interactivity 2>&1 | Select-String -NotMatch '█|▒' | Out-File "$o/winget-list.txt"
+          Get-ChildItem 'C:\Program Files' -Directory | Where-Object Name -like '*ogisim*' | Select-Object FullName | Out-File "$o/winget-installdir.txt"
+      - name: GUI first paint and click on a real desktop (native 5.0.0 file)
+        continue-on-error: true
+        run: |
+          $o = "out/windows"
+          Add-Type -AssemblyName System.Windows.Forms, System.Drawing
+          Add-Type @"
+          using System; using System.Runtime.InteropServices;
+          public class U { [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr h, int c);
+            [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h);
+            [DllImport("user32.dll")] public static extern bool SetCursorPos(int x, int y);
+            [DllImport("user32.dll")] public static extern void mouse_event(int f, int x, int y, int d, int e); }
+          "@
+          function Shot($name) { $b = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds; $bmp = New-Object System.Drawing.Bitmap $b.Width, $b.Height
+            $g = [System.Drawing.Graphics]::FromImage($bmp); $g.CopyFromScreen($b.Location, [System.Drawing.Point]::Empty, $b.Size); $bmp.Save("$o/$name.png"); $g.Dispose(); $bmp.Dispose() }
+          $exe = (Get-ChildItem 'C:\Program Files\logisim-evolution' -Filter *.exe | Select-Object -First 1).FullName
+          $arg = '"' + (Resolve-Path lab/circuits/wire-colours-no-width-v5.circ).Path + '"'
+          Start-Process $exe -ArgumentList $arg
+          $h = [IntPtr]::Zero
+          for ($i = 0; $i -lt 60 -and $h -eq [IntPtr]::Zero; $i++) { Start-Sleep 1; $p = Get-Process | Where-Object { $_.MainWindowTitle -like '*Logisim*' } | Select-Object -First 1; if ($p) { $h = $p.MainWindowHandle } }
+          "window_found_after_s=$i title=$($p.MainWindowTitle)" | Out-File "$o/gui-first-paint.txt"
+          [U]::ShowWindow($h, 3) | Out-Null; [U]::SetForegroundWindow($h) | Out-Null; Start-Sleep 6
+          Shot "gui-native-v5-before-click"
+          $b = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+          [U]::SetCursorPos([int]($b.Width*0.85), [int]($b.Height*0.85)); Start-Sleep 1; Shot "gui-native-v5-after-mousemove"
+          [U]::mouse_event(2,0,0,0,0); [U]::mouse_event(4,0,0,0,0); Start-Sleep 3
+          Shot "gui-native-v5-after-click"
+          [System.Windows.Forms.SendKeys]::SendWait('^+a'); Start-Sleep 3; Shot "gui-find-action"
+          [System.Windows.Forms.SendKeys]::SendWait('{ESC}'); Start-Sleep 1
+          Get-Process | Where-Object { $_.ProcessName -like '*ogisim*' } | Stop-Process -Force
+      - name: Chocolatey and Scoop
+        continue-on-error: true
+        run: |
+          $o = "out/windows"
+          winget uninstall --id logisim-evolution.logisim-evolution -e --silent --disable-interactivity 2>&1 | Select-String -NotMatch '█|▒' | Out-File "$o/winget-uninstall.txt"
+          $t = Measure-Command { choco install logisim-evolution -y --no-progress 2>&1 | Out-File "$o/choco-install.txt" }
+          "seconds=$([math]::Round($t.TotalSeconds,1))" | Out-File -Append "$o/choco-install.txt"
+          choco list logisim-evolution 2>&1 | Out-File "$o/choco-list.txt"
+          choco uninstall logisim-evolution -y 2>&1 | Out-File "$o/choco-uninstall.txt"
+          iex "& {$(irm get.scoop.sh)} -RunAsAdmin" 2>&1 | Out-File "$o/scoop-setup.txt"
+          $env:PATH = "$env:USERPROFILE\scoop\shims;$env:PATH"
+          scoop bucket add extras 2>&1 | Out-File -Append "$o/scoop-setup.txt"
+          scoop info logisim-evolution 2>&1 | Out-File "$o/scoop-info.txt"
+          scoop cat logisim-evolution 2>&1 | Out-File "$o/scoop-manifest.json"
+          scoop install logisim-evolution 2>&1 | Out-File "$o/scoop-install.txt"
+      - name: Classic 2.7.1 on Windows with Java 21
+        continue-on-error: true
+        run: |
+          $o = "out/windows"; Invoke-WebRequest $env:L271 -OutFile l271.jar -UserAgent 'Wget'
+          Get-FileHash l271.jar | Select-Object Hash | Out-File "$o/l271-hash.txt"
+          java -version 2>&1 | Out-File "$o/l271-java.txt"
+          Add-Type -AssemblyName System.Windows.Forms, System.Drawing
+          $p = Start-Process java -ArgumentList '-jar','l271.jar' -PassThru; Start-Sleep 15
+          $b = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds; $bmp = New-Object System.Drawing.Bitmap $b.Width, $b.Height
+          $g = [System.Drawing.Graphics]::FromImage($bmp); $g.CopyFromScreen($b.Location, [System.Drawing.Point]::Empty, $b.Size); $bmp.Save("$o/l271-gui.png")
+          "alive=$(-not $p.HasExited)" | Out-File "$o/l271-gui.txt"; Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: windows, path: out }
+
+  macos:
+    runs-on: macos-15
+    defaults: { run: { shell: 'bash {0}' } }
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install DMG; first paint and click (native 5.0.0 file)
+        run: |
+          o=out/macos; mkdir -p $o; sw_vers > $o/machine.txt
+          n=logisim-evolution-$VER-aarch64.dmg; curl -sSL -o $n "$BASE/$n"; hdiutil attach -nobrowse $n > /dev/null
+          vol=$(ls -d /Volumes/* | grep -i logisim | head -1); cp -R "$vol"/*.app /Applications/; A=$(ls -d /Applications/Logisim*.app | head -1); echo "$A" > $o/app-path.txt
+          brew install cliclick > /dev/null 2>&1
+          "$A/Contents/MacOS/Logisim-evolution" --no-splash $PWD/lab/circuits/wire-colours-no-width-v5.circ > $o/gui-stdout.txt 2>&1 &
+          sleep 30; screencapture -x $o/gui-native-v5-before-click.png
+          cliclick m:1200,700; sleep 2; screencapture -x $o/gui-native-v5-after-mousemove.png
+          cliclick c:1200,700; sleep 3; screencapture -x $o/gui-native-v5-after-click.png
+          osascript -e 'tell application "System Events" to keystroke "a" using {command down, shift down}' 2>> $o/osascript.txt; sleep 3
+          screencapture -x $o/gui-find-action.png
+          pkill -f Logisim-evolution; sleep 2
+      - name: Gatekeeper dialog for a quarantined copy
+        run: |
+          o=out/macos; A=$(cat $o/app-path.txt)
+          spctl --status > $o/spctl-status.txt 2>&1
+          rm -rf /tmp/q && mkdir /tmp/q && cp -R "$A" /tmp/q/; Q=$(ls -d /tmp/q/*.app)
+          xattr -w com.apple.quarantine "0083;$(printf %x $(date +%s));Safari;" "$Q"
+          open "$Q" > $o/open-quarantined.txt 2>&1; echo "exit=$?" >> $o/open-quarantined.txt
+          sleep 10; screencapture -x $o/gatekeeper-dialog-01.png
+          pgrep -fl -i logisim > $o/after-open-processes.txt 2>&1 || echo "no logisim process" > $o/after-open-processes.txt
+          log show --last 2m --predicate 'process == "syspolicyd" OR subsystem == "com.apple.syspolicy"' --style compact 2>/dev/null | tail -40 > $o/syspolicy-log.txt
+          osascript -e 'tell application "System Events" to get name of every window of every process whose background only is false' > $o/visible-windows.txt 2>&1
+          pkill -f -i logisim; killall CoreServicesUIAgent 2>/dev/null; true
+      - name: Classic 2.7.1 jar on macOS with Java 21
+        run: |
+          o=out/macos; curl -sSL -A Wget -o l271.jar "$L271"; shasum -a 256 l271.jar > $o/l271-hash.txt
+          java -version > $o/l271-java.txt 2>&1
+          java -jar l271.jar > $o/l271-stdout.txt 2>&1 & sleep 15; screencapture -x $o/l271-gui.png; pkill -f l271.jar; true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: macos, path: out }
+
+  commit:
+    needs: [flatpak, snap, fedora-rpm, arch-aur, windows, macos]
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { path: artifacts }
+      - name: Commit results
+        run: |
+          d=results/round3-$(date -u +%Y-%m-%d)-run${{ github.run_number }}
+          mkdir -p $d; for a in artifacts/*; do cp -R $a/* $d/; done
+          echo "run=${{ github.run_id }} sha=${{ github.sha }} date=$(date -u +%FT%TZ)" > $d/RUN.txt
+          git config user.name 'logisim.dev lab'; git config user.email 'lab@users.noreply.github.com'
+          git add results; git commit -m "Lab round 3 results run ${{ github.run_number }}" || exit 0
+          git pull --rebase origin ${{ github.ref_name }}; git push origin HEAD:${{ github.ref_name }}
