@@ -1,0 +1,74 @@
+# logisim.dev lab round 5: macOS only. First paint then a click inside the canvas; Gatekeeper with the quarantined
+# copy launched in the background (screenshot after 10 s); classic 2.7.1 jar with Java 21.
+name: lab-round5
+on:
+  push:
+    paths: ['.github/workflows/lab5.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+env:
+  VER: '5.0.0'
+  BASE: https://github.com/logisim-evolution/logisim-evolution/releases/download/v5.0.0
+  L271: https://downloads.sourceforge.net/project/circuit/2.7.x/2.7.1/logisim-generic-2.7.1.jar
+jobs:
+  macos:
+    runs-on: macos-15
+    timeout-minutes: 25
+    defaults: { run: { shell: 'bash {0}' } }
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install, first paint, click inside the canvas
+        timeout-minutes: 6
+        run: |
+          o=out/macos-15; mkdir -p $o; sw_vers > $o/machine.txt
+          n=logisim-evolution-$VER-aarch64.dmg; curl -sSL -o $n "$BASE/$n"; hdiutil attach -nobrowse $n > /dev/null
+          vol=$(ls -d /Volumes/* | grep -i logisim | head -1); cp -R "$vol"/*.app /Applications/; A=$(ls -d /Applications/Logisim*.app | head -1); echo "$A" > $o/app-path.txt
+          brew install cliclick > /dev/null 2>&1
+          "$A/Contents/MacOS/Logisim-evolution" --no-splash $PWD/lab/circuits/wire-colours-no-width-v5.circ > $o/gui-stdout.txt 2>&1 &
+          sleep 30
+          osascript -e 'tell application "System Events" to tell (first process whose name contains "ogisim") to get {position, size} of window 1' > $o/window-geometry.txt 2>&1
+          screencapture -x $o/gui-native-v5-before-click.png
+          read X Y W H < <(tr -d ',' < $o/window-geometry.txt)
+          CX=$((X + W*7/10)); CY=$((Y + H*7/10)); echo "click at $CX,$CY" >> $o/window-geometry.txt
+          cliclick c:$CX,$CY; sleep 3; screencapture -x $o/gui-native-v5-after-click.png
+          osascript -e 'tell application "System Events" to tell (first process whose name contains "ogisim") to click menu bar item "Logisim-evolution" of menu bar 1' >> $o/osascript.txt 2>&1
+          sleep 1.5; screencapture -x $o/menu-app.png; osascript -e 'tell application "System Events" to key code 53' >/dev/null 2>&1
+          pkill -f Logisim-evolution; sleep 2
+      - name: Classic 2.7.1 jar on macOS with Java 21
+        timeout-minutes: 4
+        run: |
+          o=out/macos-15; curl -sSL -A Wget -o l271.jar "$L271"; shasum -a 256 l271.jar > $o/l271-hash.txt
+          java -version > $o/l271-java.txt 2>&1
+          (java -jar l271.jar > $o/l271-stdout.txt 2>&1 &) ; sleep 20; screencapture -x $o/l271-gui.png
+          pgrep -fl l271.jar > $o/l271-process.txt 2>&1; pkill -f l271.jar; true
+      - name: Gatekeeper, quarantined copy launched in the background
+        timeout-minutes: 4
+        run: |
+          o=out/macos-15; A=$(cat $o/app-path.txt)
+          rm -rf /tmp/q && mkdir /tmp/q && cp -R "$A" /tmp/q/; Q=$(ls -d /tmp/q/*.app)
+          xattr -w com.apple.quarantine "0083;$(printf %x $(date +%s));Safari;" "$Q"
+          ( open "$Q" > $o/open-quarantined.txt 2>&1; echo "open-exit=$?" >> $o/open-quarantined.txt ) &
+          sleep 12; screencapture -x $o/gatekeeper-dialog-01.png
+          pgrep -fl -i "logisim|CoreServicesUIAgent" > $o/after-open-processes.txt 2>&1
+          sleep 8; screencapture -x $o/gatekeeper-dialog-02.png
+          pkill -f -i "/tmp/q/" ; true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: macos, path: out }
+  commit:
+    needs: [macos]
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { path: artifacts }
+      - name: Commit results
+        run: |
+          d=results/round5-$(date -u +%Y-%m-%d)-run${{ github.run_number }}
+          mkdir -p $d; for a in artifacts/*; do cp -R $a/* $d/; done
+          echo "run=${{ github.run_id }} sha=${{ github.sha }} date=$(date -u +%FT%TZ)" > $d/RUN.txt
+          git config user.name 'logisim.dev lab'; git config user.email 'lab@users.noreply.github.com'
+          git add results; git commit -m "Lab round 5 results run ${{ github.run_number }}" || exit 0
+          git pull --rebase origin ${{ github.ref_name }}; git push origin HEAD:${{ github.ref_name }}
