@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project source="2.7.1" version="1.0">
+  This file is intended to be loaded by Logisim (logisim.dev lab).
+  <lib desc="#Wiring" name="0"/>
+  <lib desc="#Gates" name="1"/>
+  <lib desc="#Plexers" name="2"/>
+  <lib desc="#Arithmetic" name="3"/>
+  <lib desc="#Memory" name="4"/>
+  <lib desc="#I/O" name="5"/>
+  <lib desc="#Base" name="6"/>
+  <main name="main"/>
+  <options>
+    <a name="sim_limit" val="1000"/>
+  </options>
+  <circuit name="main">
+    <a name="circuit" val="main"/>
+    <comp lib="6" loc="(200,40)" name="Text">
+      <a name="text" val="1: normal (1 = bright green)"/>
+    </comp>
+    <comp lib="0" loc="(100,80)" name="Constant">
+    </comp>
+    <wire from="(100,80)" to="(300,80)"/>
+    <comp lib="0" loc="(300,80)" name="Pin">
+      <a name="facing" val="west"/>
+      <a name="output" val="true"/>
+      <a name="label" val="OK"/>
+    </comp>
+    <comp lib="6" loc="(200,140)" name="Text">
+      <a name="text" val="2: two drivers disagree (E, red)"/>
+    </comp>
+    <comp lib="0" loc="(100,180)" name="Constant">
+    </comp>
+    <comp lib="0" loc="(100,220)" name="Constant">
+      <a name="value" val="0x0"/>
+    </comp>
+    <wire from="(100,180)" to="(160,180)"/>
+    <wire from="(160,180)" to="(160,220)"/>
+    <wire from="(160,220)" to="(100,220)"/>
+    <wire from="(160,200)" to="(300,200)"/>
+    <comp lib="0" loc="(300,200)" name="Pin">
+      <a name="facing" val="west"/>
+      <a name="output" val="true"/>
+      <a name="label" val="E"/>
+    </comp>
+    <comp lib="6" loc="(200,280)" name="Text">
+      <a name="text" val="3: nothing drives the wire (X, blue)"/>
+    </comp>
+    <wire from="(100,320)" to="(300,320)"/>
+    <comp lib="0" loc="(300,320)" name="Pin">
+      <a name="facing" val="west"/>
+      <a name="output" val="true"/>
+      <a name="label" val="X"/>
+    </comp>
+    <comp lib="6" loc="(200,400)" name="Text">
+      <a name="text" val="4: 4-bit wire into 1-bit pin (orange)"/>
+    </comp>
+    <comp lib="0" loc="(100,440)" name="Pin">
+      <a name="width" val="4"/>
+      <a name="tristate" val="false"/>
+      <a name="label" val="D"/>
+    </comp>
+    <wire from="(100,440)" to="(300,440)"/>
+    <comp lib="0" loc="(300,440)" name="Pin">
+      <a name="facing" val="west"/>
+      <a name="output" val="true"/>
+      <a name="label" val="W"/>
+    </comp>
+  </circuit>
+</project>

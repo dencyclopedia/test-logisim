@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project source="5.0.0" version="1.0">
+  This file is intended to be loaded by Logisim-evolution v5.0.0(https://github.com/logisim-evolution/).
+
+  <lib desc="#Wiring" name="0"/>
+  <lib desc="#Gates" name="1"/>
+  <lib desc="#Plexers" name="2"/>
+  <lib desc="#Arithmetic" name="3"/>
+  <lib desc="#FPArithmetic" name="4"/>
+  <lib desc="#Memory" name="5"/>
+  <lib desc="#I/O" name="6"/>
+  <lib desc="#Base" name="7"/>
+  <main name="main"/>
+  <options>
+    <a name="gateUndefined" val="ignore"/>
+    <a name="simlimit" val="1000"/>
+    <a name="simrand" val="0"/>
+  </options>
+  <mappings/>
+  <toolbar/>
+  <circuit name="main">
+    <a name="circuit" val="main"/>
+    <comp lib="0" loc="(40,380)" name="Clock">
+    </comp>
+    <wire from="(40,380)" to="(100,380)"/>
+    <comp lib="5" loc="(100,300)" name="Counter">
+      <a name="width" val="4"/>
+      <a name="max" val="0xf"/>
+    </comp>
+    <wire from="(290,410)" to="(340,410)"/>
+    <wire from="(340,410)" to="(340,110)"/>
+    <wire from="(340,110)" to="(400,110)"/>
+    <comp lib="5" loc="(400,100)" name="ROM">
+      <a name="addrWidth" val="4"/>
+      <a name="dataWidth" val="8"/>
+      <a name="label" val="PROG"/>
+    </comp>
+    <wire from="(640,160)" to="(720,160)"/>
+    <comp lib="0" loc="(720,160)" name="Pin">
+      <a name="facing" val="west"/>
+      <a name="output" val="true"/>
+      <a name="width" val="8"/>
+      <a name="label" val="D"/>
+      <a name="appearance" val="NewPins"/>
+    </comp>
+    <wire from="(340,410)" to="(340,510)"/>
+    <wire from="(340,510)" to="(560,510)"/>
+    <comp lib="0" loc="(520,530)" name="Constant">
+      <a name="width" val="4"/>
+      <a name="value" val="0xf"/>
+    </comp>
+    <wire from="(520,530)" to="(560,530)"/>
+    <comp lib="3" loc="(600,520)" name="Comparator">
+      <a name="width" val="4"/>
+    </comp>
+    <wire from="(600,520)" to="(720,520)"/>
+    <comp lib="0" loc="(720,520)" name="Pin">
+      <a name="facing" val="west"/>
+      <a name="output" val="true"/>
+      <a name="label" val="halt"/>
+      <a name="appearance" val="NewPins"/>
+    </comp>
+  </circuit>
+</project>

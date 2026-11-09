@@ -1,0 +1,255 @@
+# logisim.dev install lab: tests the official Logisim-evolution release assets on
+# GitHub-hosted Windows, macOS and Ubuntu runners and commits the results to results/<run>/.
+# Every step records what it saw; nothing here is allowed to fail the job.
+name: install-lab
+on:
+  push:
+    paths: ['.github/workflows/lab.yml', 'lab/**']
+  workflow_dispatch:
+permissions:
+  contents: write
+env:
+  VER: '5.0.0'
+  BASE: https://github.com/logisim-evolution/logisim-evolution/releases/download/v5.0.0
+
+jobs:
+  windows:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2025, windows-11-arm]
+    runs-on: ${{ matrix.os }}
+    defaults: { run: { shell: pwsh } }
+    steps:
+      - uses: actions/checkout@v4
+      - name: Machine
+        continue-on-error: true
+        run: |
+          $o = "out/${{ matrix.os }}"; New-Item -ItemType Directory -Force $o | Out-Null
+          $os = Get-CimInstance Win32_OperatingSystem
+          @{ runner='${{ matrix.os }}'; caption=$os.Caption; version=$os.Version; arch=$env:PROCESSOR_ARCHITECTURE;
+             java_on_path=[bool](Get-Command java -ErrorAction SilentlyContinue) } | ConvertTo-Json | Set-Content "$o/machine.json"
+          if (Get-Command java -ErrorAction SilentlyContinue) { java -version 2>&1 | Out-File "$o/java-on-path.txt" }
+      - name: Download assets and hash them
+        continue-on-error: true
+        run: |
+          $o = "out/${{ matrix.os }}"; $arch = if ($env:PROCESSOR_ARCHITECTURE -eq 'ARM64') {'aarch64'} else {'amd64'}
+          $names = @("logisim-evolution-$env:VER-$arch.msi", "logisim-evolution-$env:VER-windows-$arch.zip", "logisim-evolution-$env:VER-all.jar")
+          $rows = foreach ($n in $names) {
+            $t = Measure-Command { Invoke-WebRequest "$env:BASE/$n" -OutFile $n }
+            $f = Get-Item $n
+            [pscustomobject]@{ name=$n; bytes=$f.Length; sha256=(Get-FileHash $n -Algorithm SHA256).Hash.ToLower(); download_s=[math]::Round($t.TotalSeconds,1) }
+          }
+          $rows | ConvertTo-Json | Set-Content "$o/downloads.json"
+          # Authenticode signature of the MSI (is it signed?)
+          Get-AuthenticodeSignature "logisim-evolution-$env:VER-$arch.msi" | Select-Object Status, StatusMessage, @{n='Signer';e={$_.SignerCertificate.Subject}} | ConvertTo-Json | Set-Content "$o/msi-signature.json"
+          # Mark-of-the-web / Zone.Identifier on the downloaded file
+          Get-Content "logisim-evolution-$env:VER-$arch.msi" -Stream Zone.Identifier -ErrorAction SilentlyContinue | Out-File "$o/msi-zone-identifier.txt"
+      - name: Silent MSI install
+        continue-on-error: true
+        run: |
+          $o = "out/${{ matrix.os }}"; $arch = if ($env:PROCESSOR_ARCHITECTURE -eq 'ARM64') {'aarch64'} else {'amd64'}
+          $t = Measure-Command { $p = Start-Process msiexec -ArgumentList "/i logisim-evolution-$env:VER-$arch.msi /qn /norestart /l*v $o/msi-install.log" -Wait -PassThru; $p.ExitCode | Out-File "$o/msi-exit.txt" }
+          "install_seconds=$([math]::Round($t.TotalSeconds,1))" | Out-File "$o/msi-timing.txt"
+          $dirs = Get-ChildItem 'C:\Program Files','C:\Program Files (x86)',"$env:LOCALAPPDATA\Programs" -Directory -ErrorAction SilentlyContinue | Where-Object Name -like '*ogisim*'
+          $dirs | Select-Object FullName | ConvertTo-Json | Set-Content "$o/install-dirs.json"
+          foreach ($d in $dirs) {
+            Get-ChildItem $d.FullName -Recurse -File | Select-Object @{n='path';e={$_.FullName.Substring($d.FullName.Length)}}, Length |
+              Export-Csv "$o/install-tree.csv" -NoTypeInformation
+            "{0:N1} MB" -f ((Get-ChildItem $d.FullName -Recurse -File | Measure-Object Length -Sum).Sum/1MB) | Out-File "$o/install-size.txt"
+          }
+          Get-ChildItem "$env:ProgramData\Microsoft\Windows\Start Menu\Programs" -Recurse -Filter '*ogisim*' | Select-Object FullName | ConvertTo-Json | Set-Content "$o/start-menu.json"
+          Get-ChildItem 'HKLM:\SOFTWARE\Classes\.circ' -ErrorAction SilentlyContinue | Out-File "$o/circ-association.txt"
+          cmd /c "assoc .circ" 2>&1 | Out-File -Append "$o/circ-association.txt"
+      - name: Run the bundled runtime headless (tty)
+        continue-on-error: true
+        run: |
+          $o = "out/${{ matrix.os }}"
+          $d = (Get-ChildItem 'C:\Program Files' -Directory | Where-Object Name -like '*ogisim*' | Select-Object -First 1).FullName
+          $java = Get-ChildItem $d -Recurse -Filter java.exe | Select-Object -First 1
+          $jar = Get-ChildItem $d -Recurse -Filter *.jar | Where-Object Name -like 'logisim*' | Select-Object -First 1
+          "java=$($java.FullName)`njar=$($jar.FullName)" | Out-File "$o/bundled.txt"
+          & $java.FullName -version 2>&1 | Out-File -Append "$o/bundled.txt"
+          & $java.FullName -jar $jar.FullName --version 2>&1 | Out-File "$o/version.txt"
+          & $java.FullName -jar $jar.FullName --tty table lab/circuits/full-adder-v5.circ 2>&1 | Out-File "$o/tty-full-adder.txt"
+          $t = Measure-Command { & $java.FullName -jar $jar.FullName --tty table lab/circuits/rom-seq.circ --load lab/circuits/rom-raw.txt 2>&1 | Out-File "$o/tty-rom-load.txt" }
+          & $java.FullName -jar $jar.FullName --no-splash -w main lab/circuits/full-adder-pass.txt lab/circuits/full-adder-v5.circ 2>&1 | Out-File "$o/test-vector-pass.txt"; "exit=$LASTEXITCODE" | Out-File -Append "$o/test-vector-pass.txt"
+          & $java.FullName -jar $jar.FullName --no-splash -w main lab/circuits/full-adder-fail.txt lab/circuits/full-adder-v5.circ 2>&1 | Out-File "$o/test-vector-fail.txt"; "exit=$LASTEXITCODE" | Out-File -Append "$o/test-vector-fail.txt"
+      - name: Launch the GUI and take screenshots
+        continue-on-error: true
+        run: |
+          $o = "out/${{ matrix.os }}"
+          $d = (Get-ChildItem 'C:\Program Files' -Directory | Where-Object Name -like '*ogisim*' | Select-Object -First 1).FullName
+          $exe = Get-ChildItem $d -Filter *.exe | Select-Object -First 1
+          Add-Type -AssemblyName System.Windows.Forms, System.Drawing
+          function Shot($name) {
+            $b = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+            $bmp = New-Object System.Drawing.Bitmap $b.Width, $b.Height
+            $g = [System.Drawing.Graphics]::FromImage($bmp); $g.CopyFromScreen($b.Location, [System.Drawing.Point]::Empty, $b.Size)
+            $bmp.Save("$o/$name.png"); $g.Dispose(); $bmp.Dispose()
+          }
+          $t0 = Get-Date
+          $arg = '"' + (Resolve-Path lab/circuits/wire-colours.circ).Path + '"'
+          $p = Start-Process $exe.FullName -ArgumentList $arg -PassThru
+          $seen = $null
+          for ($i = 0; $i -lt 60; $i++) { Start-Sleep 1; $w = Get-Process -Id $p.Id -ErrorAction SilentlyContinue; if ($w -and $w.MainWindowHandle -ne 0) { $seen = $i; break } }
+          "window_after_s=$seen" | Out-File "$o/gui-launch.txt"
+          Start-Sleep 8; Shot "gui-wire-colours"
+          [System.Windows.Forms.SendKeys]::SendWait('{ENTER}'); Start-Sleep 3
+          [System.Windows.Forms.SendKeys]::SendWait('^r'); Start-Sleep 3; Shot "gui-wire-colours-after-reset"
+          $alive = [bool](Get-Process -Id $p.Id -ErrorAction SilentlyContinue)
+          "alive_after_20s=$alive" | Out-File -Append "$o/gui-launch.txt"
+          Get-Process | Where-Object { $_.ProcessName -like '*ogisim*' -or $_.ProcessName -like 'java*' } | Select-Object ProcessName, Id, WorkingSet64 | ConvertTo-Json | Set-Content "$o/gui-processes.json"
+          Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
+      - name: Portable zip (no install)
+        continue-on-error: true
+        run: |
+          $o = "out/${{ matrix.os }}"; $arch = if ($env:PROCESSOR_ARCHITECTURE -eq 'ARM64') {'aarch64'} else {'amd64'}
+          Expand-Archive "logisim-evolution-$env:VER-windows-$arch.zip" -DestinationPath portable
+          Get-ChildItem portable -Recurse -Depth 2 | Select-Object FullName | Out-File "$o/zip-tree.txt"
+          $exe = Get-ChildItem portable -Recurse -Filter *.exe | Where-Object Name -like '*ogisim*' | Select-Object -First 1
+          "exe=$($exe.FullName)" | Out-File -Append "$o/zip-tree.txt"
+      - name: Package managers
+        continue-on-error: true
+        run: |
+          $o = "out/${{ matrix.os }}"
+          if (Get-Command winget -ErrorAction SilentlyContinue) { winget show --id logisim-evolution.logisim-evolution --accept-source-agreements 2>&1 | Out-File "$o/winget-show.txt" } else { 'winget not available on this runner' | Out-File "$o/winget-show.txt" }
+          if (Get-Command choco -ErrorAction SilentlyContinue) { choco search logisim --exact --all-versions --limit-output 2>&1 | Select-Object -First 15 | Out-File "$o/choco-search.txt"; choco search logisim 2>&1 | Out-File -Append "$o/choco-search.txt" }
+      - name: Uninstall
+        continue-on-error: true
+        run: |
+          $o = "out/${{ matrix.os }}"; $arch = if ($env:PROCESSOR_ARCHITECTURE -eq 'ARM64') {'aarch64'} else {'amd64'}
+          $p = Start-Process msiexec -ArgumentList "/x logisim-evolution-$env:VER-$arch.msi /qn /norestart" -Wait -PassThru
+          "exit=$($p.ExitCode)" | Out-File "$o/uninstall.txt"
+          Get-ChildItem 'C:\Program Files' -Directory | Where-Object Name -like '*ogisim*' | Out-File -Append "$o/uninstall.txt"
+          Get-ChildItem $env:APPDATA, $env:LOCALAPPDATA -Directory -ErrorAction SilentlyContinue | Where-Object Name -like '*ogisim*' | Out-File -Append "$o/uninstall-leftovers.txt"
+          reg query "HKCU\Software\JavaSoft\Prefs\com\cburch" /s 2>&1 | Select-Object -First 40 | Out-File "$o/prefs-registry.txt"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: 'win-${{ matrix.os }}', path: out }
+
+  macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: macos-15, dmg: aarch64 }
+          - { os: macos-15-intel, dmg: x86_64 }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Machine
+        continue-on-error: true
+        run: |
+          o=out/${{ matrix.os }}; mkdir -p $o
+          { sw_vers; uname -m; } > $o/machine.txt
+      - name: Download and hash
+        continue-on-error: true
+        run: |
+          o=out/${{ matrix.os }}; n=logisim-evolution-$VER-${{ matrix.dmg }}.dmg
+          s=$(date +%s); curl -sSL -o $n "$BASE/$n"; e=$(date +%s)
+          echo "{\"name\":\"$n\",\"bytes\":$(stat -f%z $n),\"sha256\":\"$(shasum -a 256 $n | cut -d' ' -f1)\",\"download_s\":$((e-s))}" > $o/downloads.json
+      - name: Mount, copy to Applications, check signing and Gatekeeper
+        continue-on-error: true
+        run: |
+          o=out/${{ matrix.os }}; n=logisim-evolution-$VER-${{ matrix.dmg }}.dmg
+          hdiutil attach -nobrowse $n > $o/hdiutil.txt 2>&1
+          vol=$(ls -d /Volumes/* | grep -i logisim | head -1); echo "volume=$vol" >> $o/hdiutil.txt; ls -la "$vol" >> $o/hdiutil.txt
+          app=$(ls -d "$vol"/*.app | head -1); echo "app=$app" >> $o/hdiutil.txt
+          cp -R "$app" /Applications/
+          A="/Applications/$(basename "$app")"; echo "$A" > $o/app-path.txt
+          du -sh "$A" > $o/app-size.txt
+          codesign -dv --verbose=2 "$A" > $o/codesign.txt 2>&1; echo "exit=$?" >> $o/codesign.txt
+          codesign --verify --deep --strict "$A" > $o/codesign-verify.txt 2>&1; echo "exit=$?" >> $o/codesign-verify.txt
+          spctl --assess --type execute -vv "$A" > $o/spctl-before-quarantine.txt 2>&1; echo "exit=$?" >> $o/spctl-before-quarantine.txt
+          # Simulate a browser download: add the quarantine flag, then ask Gatekeeper again
+          xattr -w com.apple.quarantine "0083;$(printf %x $(date +%s));Safari;" "$A"
+          xattr -l "$A" > $o/xattr-quarantined.txt 2>&1
+          spctl --assess --type execute -vv "$A" > $o/spctl-quarantined.txt 2>&1; echo "exit=$?" >> $o/spctl-quarantined.txt
+          # The usual fix: remove the quarantine flag
+          xattr -dr com.apple.quarantine "$A"; xattr -l "$A" > $o/xattr-after-fix.txt 2>&1
+          spctl --assess --type execute -vv "$A" > $o/spctl-after-fix.txt 2>&1; echo "exit=$?" >> $o/spctl-after-fix.txt
+          find "$A/Contents" -maxdepth 2 > $o/app-tree.txt
+          plutil -p "$A/Contents/Info.plist" > $o/info-plist.txt 2>&1
+      - name: Bundled runtime headless (tty)
+        continue-on-error: true
+        run: |
+          o=out/${{ matrix.os }}; A=$(cat $o/app-path.txt)
+          J=$(find "$A/Contents" -name java -type f -perm -u+x | head -1); JAR=$(find "$A/Contents" -name 'logisim*.jar' | head -1)
+          echo "java=$J jar=$JAR" > $o/bundled.txt; "$J" -version >> $o/bundled.txt 2>&1
+          "$J" -jar "$JAR" --version > $o/version.txt 2>&1
+          "$J" -Djava.awt.headless=true -jar "$JAR" --tty table lab/circuits/full-adder-v5.circ > $o/tty-full-adder.txt 2>&1
+          "$J" -jar "$JAR" --tty table lab/circuits/rom-seq.circ --load lab/circuits/rom-raw.txt > $o/tty-rom-load.txt 2>&1
+          "$J" -jar "$JAR" --no-splash -w main lab/circuits/full-adder-fail.txt lab/circuits/full-adder-v5.circ > $o/test-vector-fail.txt 2>&1; echo "exit=$?" >> $o/test-vector-fail.txt
+          java -version > $o/java-on-path.txt 2>&1 || true
+      - name: GUI launch and screenshot
+        continue-on-error: true
+        run: |
+          o=out/${{ matrix.os }}; A=$(cat $o/app-path.txt)
+          open -a "$A" lab/circuits/wire-colours.circ; sleep 25
+          screencapture -x $o/gui-wire-colours.png || true
+          osascript -e 'tell application "System Events" to keystroke return' || true; sleep 3
+          screencapture -x $o/gui-after-enter.png || true
+          pgrep -fl -i logisim > $o/gui-processes.txt 2>&1 || echo none > $o/gui-processes.txt
+          pkill -f -i logisim || true
+          ls ~/Library/Preferences | grep -i -E 'cburch|logisim' > $o/prefs-files.txt 2>&1 || true
+      - name: Homebrew and MacPorts
+        continue-on-error: true
+        run: |
+          o=out/${{ matrix.os }}
+          brew info --cask logisim-evolution > $o/brew-info.txt 2>&1 || true
+          brew install --cask logisim-evolution > $o/brew-install.txt 2>&1; echo "exit=$?" >> $o/brew-install.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: 'mac-${{ matrix.os }}', path: out }
+
+  ubuntu:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Distro packages
+        continue-on-error: true
+        run: |
+          o=out/ubuntu-24.04; mkdir -p $o
+          { lsb_release -a; uname -m; } > $o/machine.txt 2>&1
+          apt-cache policy logisim > $o/apt-policy.txt 2>&1
+          snap info logisim-evolution > $o/snap-info.txt 2>&1 || true
+          flatpak --version > $o/flatpak.txt 2>&1 || echo 'flatpak not installed' >> $o/flatpak.txt
+      - name: Official .deb
+        continue-on-error: true
+        run: |
+          o=out/ubuntu-24.04; n=logisim-evolution_${VER}_amd64.deb
+          curl -sSL -o $n "$BASE/$n"
+          echo "{\"name\":\"$n\",\"bytes\":$(stat -c%s $n),\"sha256\":\"$(sha256sum $n | cut -d' ' -f1)\"}" > $o/downloads.json
+          dpkg-deb -I $n > $o/deb-info.txt 2>&1
+          s=$(date +%s); sudo apt-get install -y ./$n > $o/deb-install.txt 2>&1; echo "exit=$? seconds=$(( $(date +%s)-s ))" >> $o/deb-install.txt
+          dpkg -L logisim-evolution > $o/deb-files.txt 2>&1
+          ls -la /usr/share/applications | grep -i logisim > $o/desktop-entry.txt 2>&1
+          cat $(grep -il logisim /usr/share/applications/*.desktop /opt/*/lib/*.desktop 2>/dev/null | head -1) >> $o/desktop-entry.txt 2>&1
+          B=$(dpkg -L logisim-evolution | grep -E '/bin/[^/]+$' | head -1); echo "launcher=$B" > $o/bundled.txt
+          J=$(dpkg -L logisim-evolution | grep -E '/bin/java$' | head -1); JAR=$(dpkg -L logisim-evolution | grep -E 'logisim.*\.jar$' | head -1)
+          echo "java=$J jar=$JAR" >> $o/bundled.txt; "$J" -version >> $o/bundled.txt 2>&1
+          "$J" -jar "$JAR" --version > $o/version.txt 2>&1
+          "$J" -jar "$JAR" --tty table lab/circuits/full-adder-v5.circ > $o/tty-full-adder.txt 2>&1
+          "$J" -jar "$JAR" --tty table lab/circuits/rom-seq.circ --load lab/circuits/rom-raw.txt > $o/tty-rom-load.txt 2>&1
+          sudo apt-get remove -y logisim-evolution > $o/deb-remove.txt 2>&1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: ubuntu, path: out }
+
+  commit:
+    needs: [windows, macos, ubuntu]
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { path: artifacts }
+      - name: Commit results
+        run: |
+          d=results/install-$(date -u +%Y-%m-%d)-run${{ github.run_number }}
+          mkdir -p $d; for a in artifacts/*; do cp -R $a/* $d/; done
+          echo "run=${{ github.run_id }} sha=${{ github.sha }} date=$(date -u +%FT%TZ)" > $d/RUN.txt
+          git config user.name 'logisim.dev lab'; git config user.email 'lab@users.noreply.github.com'
+          git add results; git commit -m "Install lab results run ${{ github.run_number }}" || exit 0
+          git pull --rebase origin ${{ github.ref_name }}; git push origin HEAD:${{ github.ref_name }}
