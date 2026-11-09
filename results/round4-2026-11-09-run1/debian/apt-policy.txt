@@ -1,0 +1,12 @@
+logisim:
+  Installed: (none)
+  Candidate: 2.7.1~dfsg-4
+  Version table:
+     2.7.1~dfsg-4 500
+        500 http://deb.debian.org/debian bookworm/main amd64 Packages
+default-jre:
+  Installed: (none)
+  Candidate: 2:1.17-74
+  Version table:
+     2:1.17-74 500
+        500 http://deb.debian.org/debian bookworm/main amd64 Packages

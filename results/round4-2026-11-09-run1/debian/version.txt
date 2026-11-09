@@ -1,0 +1,6 @@
+Nov 09, 2026 3:53:43 PM java.util.prefs.FileSystemPreferences setupUserRoot
+INFO: Created user preferences directory.
+Logisim-evolution v5.0.0
+https://github.com/logisim-evolution/
+main/7928a1c6 (2026-09-12T06:00:37+0200)
+Java HotSpot(TM) 64-Bit Server VM v26.0.1 (Oracle Corporation)

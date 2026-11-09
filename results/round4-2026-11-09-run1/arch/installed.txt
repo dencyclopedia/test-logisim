@@ -1,0 +1,25 @@
+Name            : logisim-evolution-bin
+Version         : 5.0.0-1
+Description     : An educational tool for designing and simulating digital logic circuits (binary version)
+Architecture    : any
+URL             : https://github.com/logisim-evolution/logisim-evolution
+Licenses        : GPL3
+Groups          : None
+Provides        : logisim-evolution
+Depends On      : java-runtime>=16  hicolor-icon-theme
+Optional Deps   : None
+Required By     : None
+Optional For    : None
+Conflicts With  : logisim-evolution-git  logisim-evolution
+Replaces        : None
+Installed Size  : 51.96 MiB
+Packager        : Unknown Packager
+Build Date      : Mon Nov  9 15:53:44 2026
+Install Date    : Mon Nov  9 15:53:57 2026
+Install Reason  : Explicitly installed
+Install Script  : No
+Validated By    : None
+
+error: package 'jre-openjdk' was not found
+jdk-openjdk 27.0.1.0.3.u1-1
+launcher=/usr/bin/logisim-evolution

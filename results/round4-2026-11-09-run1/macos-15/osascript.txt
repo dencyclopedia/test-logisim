@@ -1,0 +1,6 @@
+menu bar item File of menu bar 1 of application process Logisim-evolution
+menu bar item Edit of menu bar 1 of application process Logisim-evolution
+menu bar item Project of menu bar 1 of application process Logisim-evolution
+menu bar item Simulate of menu bar 1 of application process Logisim-evolution
+menu bar item Window of menu bar 1 of application process Logisim-evolution
+menu bar item Help of menu bar 1 of application process Logisim-evolution

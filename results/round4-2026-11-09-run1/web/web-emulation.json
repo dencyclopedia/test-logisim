@@ -1,0 +1,44 @@
+{
+ "logisim-app-iPad-gen-7-": {
+  "engine": "webkit",
+  "device": "iPad (gen 7)",
+  "load_ms": 993,
+  "error": null,
+  "text": "\nReport an issue\n\nLogisim: main of Untitled\nTransform your desktop app into a web app like this one.\nLearn more \n \nMade with ❤️\nby DRS Software\nPowered by CheerpJ\n📖 Read the announcement\n"
+ },
+ "circuitverse-iPad-gen-7-": {
+  "engine": "webkit",
+  "device": "iPad (gen 7)",
+  "load_ms": 1308,
+  "error": null,
+  "text": "\n\n\n\n\n\n\n\n\n\nGuest\nEnglish\n\nSign In\nRegister\n\nProject Name:  Untitled\n\nProject\n\nCircuit\n\nTools\n\nHelp\n\nGuest\n\n-\n\n+\nMain\n+ \n  Report an issue\n\n\n\n\n\nInput\nOutput\nGates\nDecoders & Plexers\nSequential Elements\nAnnotation\nMisc\n\nCircuit Tabs\nThis section displays all the circuits you have in your project. You c"
+ },
+ "logisim-app-iPhone-13": {
+  "engine": "webkit",
+  "device": "iPhone 13",
+  "load_ms": 749,
+  "error": null,
+  "text": "\nReport an issue\n\nLogisim: main of Untitled\nTransform your desktop app into a web app like this one.\nLearn more \n \nMade with ❤️\nby DRS Software\nPowered by CheerpJ\n📖 Read the announcement\n"
+ },
+ "circuitverse-iPhone-13": {
+  "engine": "webkit",
+  "device": "iPhone 13",
+  "load_ms": 1213,
+  "error": null,
+  "text": "\n\n\n\n\n\n\n\n\n\nGuest\nEnglish\n\nSign In\nRegister\n\nProject Name:  Untitled\n\nProject\n\nCircuit\n\nTools\n\nHelp\n\nGuest\n\n-\n\n+\nMain\n+ \n  Report an issue\n\n\n\n\n\nInput\nOutput\nGates\nDecoders & Plexers\nSequential Elements\nAnnotation\nMisc\n\nCircuit Tabs\nThis section displays all the circuits you have in your project. You c"
+ },
+ "logisim-app-Pixel-7": {
+  "engine": "chromium",
+  "device": "Pixel 7",
+  "load_ms": 656,
+  "error": null,
+  "text": "Report an issue\nLogisim: main of Untitled\n\nTransform your desktop app into a web app like this one.\n\nLearn more \nMade with\n❤️\nby\nDRS Software\nPowered by\nCheerpJ\n📖 Read the announcement"
+ },
+ "circuitverse-Pixel-7": {
+  "engine": "chromium",
+  "device": "Pixel 7",
+  "load_ms": 1269,
+  "error": null,
+  "text": "Guest\nEnglish\nSign In\nRegister\nProject Name:  Untitled\nProject\nCircuit\nTools\nHelp\nGuest\n-\n+\nMain\n+\n  Report an issue\nInput\nOutput\nGates\nDecoders & Plexers\nSequential Elements\nAnnotation\nMisc\nCircuit Tabs\nThis section displays all the circuits you have in your project. You can easily add and delete c"
+ }
+}
