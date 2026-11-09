@@ -1,0 +1,7 @@
+{
+  "caption": "Microsoft Windows 11 Enterprise",
+  "arch": "ARM64",
+  "java_on_path": true,
+  "runner": "windows-11-arm",
+  "version": "10.0.26200"
+}

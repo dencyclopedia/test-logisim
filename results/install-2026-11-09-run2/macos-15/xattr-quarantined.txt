@@ -1,0 +1,2 @@
+xattr-exit=0
+com.apple.quarantine: 0083;6af13e60;Safari;

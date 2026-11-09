@@ -1,0 +1,2 @@
+/home/runner/work/_temp/ae3dada1-e4f1-4a56-91cf-526f04f9caa8.sh: line 5: flatpak: command not found
+flatpak not installed

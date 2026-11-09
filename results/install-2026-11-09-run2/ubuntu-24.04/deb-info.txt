@@ -1,0 +1,18 @@
+ new Debian package, version 2.0.
+ size 71670978 bytes: control archive=2070 bytes.
+     461 bytes,    11 lines      control
+    1206 bytes,    40 lines   *  postinst             #!/bin/sh
+     822 bytes,    31 lines   *  postrm               #!/bin/sh
+    1028 bytes,    58 lines   *  preinst              #!/bin/sh
+    4211 bytes,   168 lines   *  prerm                #!/bin/sh
+ Package: logisim-evolution
+ Version: 5.0.0
+ Section: misc
+ Maintainer: logisim-evolution developers <Unknown>
+ Priority: optional
+ Architecture: amd64
+ Provides: logisim-evolution
+ Description: Digital logic design tool and simulator
+ Depends: libasound2t64 | libasound2, libbrotli1, libbz2-1.0, libc6, libfreetype6, libpng16-16t64 | libpng16-16, libx11-6, libxau6, libxcb1, libxdmcp6, libxext6, libxi6, libxrender1, libxtst6, xdg-utils, zlib1g
+ Installed-Size: 142701
+ 

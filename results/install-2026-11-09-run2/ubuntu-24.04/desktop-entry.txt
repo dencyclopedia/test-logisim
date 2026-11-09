@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=logisim-evolution
+Comment=Digital logic design tool and simulator
+Exec=/opt/logisim-evolution/bin/logisim-evolution
+
+Icon=/opt/logisim-evolution/lib/logisim-evolution.png
+Terminal=false
+Type=Application
+Categories=Utility
+MimeType=application/x-logisim-circuit

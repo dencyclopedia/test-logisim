@@ -1,0 +1,2 @@
+window_after_s=
+alive_after_20s=True

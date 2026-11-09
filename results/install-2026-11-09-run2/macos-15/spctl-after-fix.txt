@@ -1,0 +1,2 @@
+/Applications/Logisim-evolution.app: rejected
+exit=3

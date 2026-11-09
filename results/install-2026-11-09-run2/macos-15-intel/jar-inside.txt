@@ -1,0 +1,8 @@
+jar=/Applications/Logisim-evolution.app/Contents/app/logisim-evolution-5.1.0dev-all.jar
+0784622da1195c9c1ee7d3736abec1c00524e5d70ddc2076f3c2701053e8bb57  /Applications/Logisim-evolution.app/Contents/app/logisim-evolution-5.1.0dev-all.jar
+Manifest-Version: 1.0
+Implementation-Title: jar
+Implementation-Version: 5.1.0-dev
+Main-Class: com.cburch.logisim.Main
+Multi-Release: true
+

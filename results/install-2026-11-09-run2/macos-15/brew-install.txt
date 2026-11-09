@@ -1,0 +1,5 @@
+::error::disabled because it does not pass the macOS Gatekeeper check! It was disabled on 2026-09-01.
+::error::logisim-evolution: Cask 'logisim-evolution' has been disabled because it does not pass the macOS Gatekeeper check! It was disabled on 2026-09-01.
+::error::disabled because it does not pass the macOS Gatekeeper check! It was disabled on 2026-09-01.
+::error::logisim-evolution: Cask 'logisim-evolution' has been disabled because it does not pass the macOS Gatekeeper check! It was disabled on 2026-09-01.
+exit=1

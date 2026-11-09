@@ -1,0 +1,10 @@
+
+HKEY_CURRENT_USER\Software\JavaSoft\Prefs\com\cburch\logisim
+    template/Type    REG_SZ    1
+    /Selected/Board    REG_SZ    /A/L/C/H/I/T/R/Y_/A/U_/I/O
+    dark/Editor/Theme    REG_SZ    dark
+    default/Appearance    REG_SZ    logisim_evolution
+    poke/Radix2    REG_SZ    10signed
+    vhdl/Standard    REG_SZ    2002
+    recent9    REG_SZ    1794195119846;/D://a//test-logisim//test-logisim//lab//circuits//wire-colours.circ
+

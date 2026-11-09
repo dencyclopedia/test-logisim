@@ -1,0 +1,16 @@
+App has failed one or more pre-distribution checks.
+---------------------------------------------------------------
+Notary Ticket Missing
+    File: Logisim-evolution.app 
+    Severity: Fatal 
+    Full Error: A Notarization ticket is not stapled to this application. 
+    Type: Distribution Error 
+
+Internal Xprotect Error
+    Severity: Fatal 
+    Full Error: One or more files in your application triggered an Xprotect 
+        error. 
+    Type: Distribution Error 
+
+---------------------------------------------------------------
+exit=70

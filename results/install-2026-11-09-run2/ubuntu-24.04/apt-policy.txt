@@ -1,0 +1,6 @@
+logisim:
+  Installed: (none)
+  Candidate: 2.7.1~dfsg-4
+  Version table:
+     2.7.1~dfsg-4 500
+        500 mirror+file:/etc/apt/apt-mirrors.txt noble/universe amd64 Packages

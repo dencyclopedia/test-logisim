@@ -1,0 +1,5 @@
+Logisim-evolution v5.0.0
+https://github.com/logisim-evolution/
+main/7c3343e1 (2026-09-12T06:34:47+0200)
+Java HotSpot(TM) 64-Bit Server VM v25.0.2 (Oracle Corporation)
+exit=0
